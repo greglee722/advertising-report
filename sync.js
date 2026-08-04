@@ -4,7 +4,7 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.7.0';
+const VERSION = '0.7.1';
 const DATA_FILE = path.join(__dirname, 'public', 'data.json');
 
 // Boston metro ZIP → neighborhood (matches active-ads-combine)
@@ -149,10 +149,14 @@ function xmlTag(xml, tag) {
 //   '1 split' / '2 split' → 1 / 2  (count the beds, ignore the layout)
 //   '1.5' / '2.5'         → 1 / 2  (floor decimals to the whole bed)
 //   'Room for Rent in X'  → null   (excluded — not a whole-unit listing)
+function isRoomForRent(bedInfo) {
+  return String(bedInfo || '').toLowerCase().trim().startsWith('room for rent');
+}
+
 function normalizeYGLBeds(bedInfo) {
   if (!bedInfo) return null;
   const s = String(bedInfo).toLowerCase().trim();
-  if (s.startsWith('room for rent')) return null;
+  if (isRoomForRent(s)) return null;
   if (s === 'studio' || s === '0') return 0;
   const n = parseInt(s, 10); // truncates '1.5' → 1 and reads the leading int of '1 split'
   return isNaN(n) || n < 0 ? null : n;
@@ -173,6 +177,10 @@ function parseYGLXml(raw) {
                         parseInt(xmlTag(block, 'StreetNumber'), 10) || null, zip),
       // YGL's own neighborhood label — kept for the out-of-area exclusion, not for display
       ygl_neighborhood: xmlTag(block, 'Neighborhood'),
+      // A room in a shared apartment, not a whole unit. Flagged explicitly rather than inferred
+      // from beds === null, which a blank BedInfo would also produce. Kept in the data but held
+      // out of the inventory table: a $1,295 room next to whole-unit rents reads as cheap stock.
+      room_for_rent:  isRoomForRent(xmlTag(block, 'BedInfo')),
       beds:           normalizeYGLBeds(xmlTag(block, 'BedInfo') || xmlTag(block, 'Beds')),
       price:          parseInt(xmlTag(block, 'Price'), 10) || null,
       available_date: xmlTag(block, 'AvailableDate'),

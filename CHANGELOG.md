@@ -1,5 +1,27 @@
 # Changelog
 
+## index.html v1.3 · sync.js v0.7.1 — 2026-08-04
+
+### Added
+- **Median asking rent per cell** in the inventory table, under each listing count. Median rather
+  than mean so one outlier penthouse cannot move a neighborhood's headline rent. Cells resting on
+  fewer than 3 listings are greyed and italicised with a hover stating the sample size — two
+  listings is not a market rate.
+
+### Fixed
+- **Rooms-for-rent were showing up as apartment inventory.** `normalizeYGLBeds` returned `null` for
+  "Room for Rent in X", which excluded them from a *bed bucket* but landed them straight in the
+  Unknown column — putting a $1,245 median beside whole-unit rents, where it reads as cheap stock.
+  All 9 were rooms in shared flats (units literally named "Room 4", "ROOM"). Now flagged explicitly
+  in `sync.js` as `room_for_rent` rather than inferred from `beds === null`, which a blank
+  `BedInfo` would also produce, and held out of the table. Their count is stated in the subtitle
+  rather than silently dropped, and every remaining whole unit has a real bed count (0 nulls).
+
+### Verified
+- Every one of the 50 neighborhood × beds cells checked against an independent recomputation from
+  `data.json` — counts and medians both. Median tested for odd, even (averages the middle pair),
+  unsorted input, empty, and outlier resistance.
+
 ## index.html v1.2 — 2026-08-04
 
 Single-page layout and filter cleanup.
