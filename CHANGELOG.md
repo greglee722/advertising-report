@@ -1,5 +1,28 @@
 # Changelog
 
+## index.html v1.2 — 2026-08-04
+
+Single-page layout and filter cleanup.
+
+### Changed
+- **Removed the Dashboard / YGL Inventory view toggle.** Inventory now lives on the same page as
+  everything else, between Lead Volume and Move-In Demand — leads above, supply below, which is the
+  comparison the report exists to support.
+- **Date presets and Custom are one control.** Custom joins Yesterday / 7 Days / 30 Days / All Time
+  in the same button group; the start and end inputs only appear once Custom is selected, and are
+  seeded with the last 30 days so the range never silently means "all time".
+- **Beds is a dropdown** instead of a button group, matching Agent and Neighborhood. Adds an
+  **Unknown** option so the leads with no captured bed count can be isolated — the same population
+  the new Unknown column surfaces.
+- **Fixed neighborhood row order** across all three tables and both dropdowns: Beacon Hill ·
+  West End · Back Bay · Fenway/Symphony · Fenway/Kenmore · West Fenway · Mission Hill · North End ·
+  South End · Theatre District/Midtown/Chinatown/Financial District. Row N is the same neighborhood
+  in every table, so the lead and inventory halves can be read side by side. Anything unlisted sorts
+  after, alphabetically — never dropped.
+
+### Removed
+- Orphaned by the above: `setView`, the `currentView` state, and the `.view-toggle` CSS.
+
 ## sync.js v0.7.0 — 2026-08-04
 
 Neighborhood accuracy. ZIP codes do not align with the neighborhoods this report reports on, and

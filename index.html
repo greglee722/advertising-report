@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lead &amp; Listing Report v1.0</title>
+<title>Lead &amp; Listing Report v1.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -55,7 +55,6 @@
   .date-range { display: flex; align-items: center; gap: 6px; margin-left: 8px; }
   .date-range input[type="date"] { border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; font-size: 12px; font-family: var(--font-body); font-weight: 600; color: var(--text); background: var(--card); cursor: pointer; transition: border-color var(--transition); }
   .date-range input[type="date"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(32,85,234,.1); }
-  .date-range input.active-range { border-color: var(--primary); background: var(--primary-light); }
   .date-range-sep { font-size: 11px; color: var(--muted); font-weight: 600; }
   .date-range button { border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px; font-size: 12px; font-family: var(--font-body); font-weight: 600; color: var(--muted); background: var(--card); cursor: pointer; transition: all var(--transition); }
   .date-range button:hover { background: var(--primary-light); color: var(--primary); }
@@ -132,11 +131,6 @@
   .movein-note { padding: 10px 22px; font-size: 11px; color: var(--muted); border-top: 1px solid #f0ecf9; }
 
   /* View toggle */
-  .view-toggle { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-left: auto; }
-  .view-toggle button { background: var(--card); border: none; border-right: 1px solid var(--border); padding: 5px 14px; font-size: 12px; font-family: var(--font-body); font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all var(--transition); }
-  .view-toggle button:last-child { border-right: none; }
-  .view-toggle button:hover { background: var(--primary-light); color: var(--primary); }
-  .view-toggle button.active { background: var(--primary); color: #fff; }
 
   /* Two-column layout */
   .two-col { display: grid; grid-template-columns: 1fr 360px; gap: 16px; margin-bottom: 20px; }
@@ -219,7 +213,6 @@
     .filters { padding: 10px 14px; gap: 10px; }
     .filter-label { font-size: 9px; }
     .btn-group button { padding: 5px 9px; font-size: 11px; }
-    .view-toggle button { padding: 5px 10px; font-size: 11px; }
     select { font-size: 11px; padding: 5px 8px; }
     .main { padding: 14px; }
     .stats-row { grid-template-columns: 1fr; gap: 10px; margin-bottom: 14px; }
@@ -278,7 +271,7 @@
 <div class="header">
   <div class="header-left">
     <h1>Lead &amp; Listing Report</h1>
-    <span class="version">v1.0</span>
+    <span class="version">v1.2</span>
   </div>
   <div style="display:flex;align-items:center;gap:16px;">
     <span class="sync-time" id="syncTime">Loading...</span>
@@ -295,12 +288,12 @@
       <button onclick="setDate('7d')">7 Days</button>
       <button onclick="setDate('30d')">30 Days</button>
       <button onclick="setDate('all')">All Time</button>
+      <button onclick="setDate('custom')">Custom</button>
     </div>
-    <div class="date-range">
+    <div class="date-range" id="dateRange" style="display:none;">
       <input type="date" id="dateStart" onchange="setCustomRange()" aria-label="Start date">
       <span class="date-range-sep">to</span>
       <input type="date" id="dateEnd" onchange="setCustomRange()" aria-label="End date">
-      <button type="button" id="dateRangeClear" onclick="clearCustomRange()" style="display:none;">Clear</button>
     </div>
   </div>
   <div class="filter-sep"></div>
@@ -320,18 +313,14 @@
   <div class="filter-sep"></div>
   <div class="filter-group">
     <span class="filter-label">Beds</span>
-    <div class="btn-group" id="bedButtons">
-      <button onclick="setBeds(null)" class="active">All</button>
-      <button onclick="setBeds(0)">Studio</button>
-      <button onclick="setBeds(1)">1BR</button>
-      <button onclick="setBeds(2)">2BR</button>
-      <button onclick="setBeds(3)">3BR+</button>
-    </div>
-  </div>
-  <div class="filter-sep"></div>
-  <div class="view-toggle" id="viewToggle">
-    <button onclick="setView('dashboard')" class="active">Dashboard</button>
-    <button onclick="setView('ygl')">YGL Inventory</button>
+    <select id="bedsFilter" onchange="setBeds(this.value)">
+      <option value="">All Beds</option>
+      <option value="0">Studio</option>
+      <option value="1">1BR</option>
+      <option value="2">2BR</option>
+      <option value="3">3BR+</option>
+      <option value="unknown">Unknown</option>
+    </select>
   </div>
 </div>
 
@@ -397,7 +386,6 @@ let customStart = '';
 let customEnd   = '';
 let currentBeds = null;
 let currentPage = 1;
-let currentView = 'dashboard';
 let cardAgent = '';
 let cardNbhd = '';
 let cardBeds = '';
@@ -489,7 +477,8 @@ function getFilteredLeads() {
     if (agentVal && l.agent !== agentVal) return false;
     if (nbhdVal && l.neighborhood !== nbhdVal) return false;
     if (currentBeds !== null) {
-      if (currentBeds === 3) { if (l.beds === null || l.beds < 3) return false; }
+      if (currentBeds === 'unknown') { if (l.beds !== null && l.beds !== undefined) return false; }
+      else if (currentBeds === 3) { if (l.beds === null || l.beds < 3) return false; }
       else { if (l.beds !== currentBeds) return false; }
     }
     return true;
@@ -960,16 +949,11 @@ function render() {
   const leads = getFilteredLeads();
   const root  = document.getElementById('root');
 
-  // YGL-only view
-  if (currentView === 'ygl') {
-    const yglHtml = renderYGLSection();
-    root.innerHTML = yglHtml || '<div class="empty" style="padding:40px;">No YGL inventory data available. Data is fetched during daily sync.</div>';
-    return;
-  }
-
-  // Dashboard view
   const statsHtml  = renderStats(leads);
   const recsHtml   = renderRecommendations();
+  // Inventory sits inline between lead volume and move-in demand: leads above, supply below.
+  const yglHtml    = renderYGLSection()
+    || '<div class="ygl-section"><div class="empty" style="padding:24px;">No YGL inventory data available. Inventory is fetched on each sync.</div></div>';
   const moveinHtml = renderMoveInTable(leads);
   const heatHtml   = renderHeatTable(leads);
   const agentHtml  = renderAgentBreakdown(leads);
@@ -1029,6 +1013,7 @@ function render() {
         ${agentHtml}
       </div>
     </div>
+    ${yglHtml}
     ${moveinHtml}
     <div class="cards-section">
       <div class="section-header">
@@ -1048,17 +1033,29 @@ function setDate(val) {
   currentDate = val;
   currentPage = 1;
   cardAgent = ''; cardNbhd = ''; cardBeds = '';
-  customStart = ''; customEnd = '';
-  document.getElementById('dateStart').value = '';
-  document.getElementById('dateEnd').value = '';
+
+  if (val === 'custom') {
+    // Opening Custom with nothing chosen yet would silently mean "all time". Seed the last 30 days
+    // so the range starts somewhere concrete and obviously editable.
+    if (!customStart && !customEnd) {
+      customStart = daysAgo(30);
+      customEnd = localDateStr(new Date());
+      document.getElementById('dateStart').value = customStart;
+      document.getElementById('dateEnd').value = customEnd;
+    }
+  } else {
+    customStart = ''; customEnd = '';
+    document.getElementById('dateStart').value = '';
+    document.getElementById('dateEnd').value = '';
+  }
+
   syncDateRangeUI();
   document.querySelectorAll('#dateButtons button').forEach(b => b.classList.remove('active'));
   event.target.classList.add('active');
   render();
 }
 
-// Custom start–end range. Either bound may be left empty: start-only means "since", end-only means
-// "up to". Picking a range deselects the presets; clearing it falls back to Yesterday.
+// Either bound may be cleared: start-only means "since", end-only means "up to".
 function setCustomRange() {
   const start = document.getElementById('dateStart').value;
   const end   = document.getElementById('dateEnd').value;
@@ -1072,32 +1069,15 @@ function setCustomRange() {
     customStart = start; customEnd = end;
   }
 
-  if (!customStart && !customEnd) { clearCustomRange(); return; }
-
   currentDate = 'custom';
   currentPage = 1;
   cardAgent = ''; cardNbhd = ''; cardBeds = '';
-  document.querySelectorAll('#dateButtons button').forEach(b => b.classList.remove('active'));
-  syncDateRangeUI();
   render();
 }
 
-function clearCustomRange() {
-  customStart = ''; customEnd = '';
-  document.getElementById('dateStart').value = '';
-  document.getElementById('dateEnd').value = '';
-  currentDate = 'yesterday';
-  currentPage = 1;
-  document.querySelectorAll('#dateButtons button').forEach((b, i) => b.classList.toggle('active', i === 0));
-  syncDateRangeUI();
-  render();
-}
-
+// The date inputs only exist while Custom is the active preset.
 function syncDateRangeUI() {
-  const on = currentDate === 'custom';
-  document.getElementById('dateStart').classList.toggle('active-range', on);
-  document.getElementById('dateEnd').classList.toggle('active-range', on);
-  document.getElementById('dateRangeClear').style.display = on ? '' : 'none';
+  document.getElementById('dateRange').style.display = currentDate === 'custom' ? '' : 'none';
 }
 
 // Human-readable label for the active date filter, used in the stat card sub-line.
@@ -1113,19 +1093,10 @@ function dateRangeLabel() {
   return 'all time';
 }
 
+// '' = all, 'unknown' = leads with no bed count captured, otherwise an integer ('3' means 3BR+)
 function setBeds(val) {
-  currentBeds = val;
+  currentBeds = val === '' ? null : (val === 'unknown' ? 'unknown' : parseInt(val, 10));
   currentPage = 1;
-  document.querySelectorAll('#bedButtons button').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  render();
-}
-
-function setView(val) {
-  currentView = val;
-  currentPage = 1;
-  document.querySelectorAll('#viewToggle button').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
   render();
 }
 
