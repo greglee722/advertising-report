@@ -4,7 +4,7 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.7.1';
+const VERSION = '0.7.2';
 const DATA_FILE = path.join(__dirname, 'public', 'data.json');
 
 // Boston metro ZIP → neighborhood (matches active-ads-combine)
@@ -153,6 +153,24 @@ function isRoomForRent(bedInfo) {
   return String(bedInfo || '').toLowerCase().trim().startsWith('room for rent');
 }
 
+// Not everything YGL lists is an apartment. Parking spaces carry beds=0 and land in the Studio
+// column at $200–$345; rooms in shared flats carry a normal bed count and land in 1BR at $900.
+// Both drag the median of a real rent figure down — a $345 parking space is what pulled
+// Fenway/Kenmore studios to $2,038 (spotted by Greg 2026-08-04).
+//
+// ⚠️ BedInfo alone is not enough. Only 5 of the 14 room listings say "Room for Rent in X"; the
+// other 9 (10 Parker Hill Ave) declare BedInfo=1 and hide it in the Unit field as "2 - Room 5".
+// Check BOTH fields. Verified against the full feed: these patterns catch 19 listings and zero
+// priced at or above $1,800, so no real apartment is caught.
+//
+// Returns null for a genuine whole unit, otherwise a short reason.
+function nonUnitReason(bedInfo, unit) {
+  const u = String(unit || '');
+  if (/\b(parking|garage|pkg)\b/i.test(u)) return 'parking';
+  if (isRoomForRent(bedInfo) || /\broom\b/i.test(u)) return 'room';
+  return null;
+}
+
 function normalizeYGLBeds(bedInfo) {
   if (!bedInfo) return null;
   const s = String(bedInfo).toLowerCase().trim();
@@ -177,10 +195,10 @@ function parseYGLXml(raw) {
                         parseInt(xmlTag(block, 'StreetNumber'), 10) || null, zip),
       // YGL's own neighborhood label — kept for the out-of-area exclusion, not for display
       ygl_neighborhood: xmlTag(block, 'Neighborhood'),
-      // A room in a shared apartment, not a whole unit. Flagged explicitly rather than inferred
-      // from beds === null, which a blank BedInfo would also produce. Kept in the data but held
-      // out of the inventory table: a $1,295 room next to whole-unit rents reads as cheap stock.
-      room_for_rent:  isRoomForRent(xmlTag(block, 'BedInfo')),
+      // 'room' or 'parking' when this isn't a whole apartment — kept in the data, held out of the
+      // inventory table so it can't distort a rent figure. Flagged explicitly rather than inferred
+      // from a null bed count, which a blank BedInfo would also produce.
+      non_unit:       nonUnitReason(xmlTag(block, 'BedInfo'), xmlTag(block, 'Unit')),
       beds:           normalizeYGLBeds(xmlTag(block, 'BedInfo') || xmlTag(block, 'Beds')),
       price:          parseInt(xmlTag(block, 'Price'), 10) || null,
       available_date: xmlTag(block, 'AvailableDate'),
