@@ -21,6 +21,32 @@
   until the manual fill is loaded, so today the page is a complete worklist (323 addresses, 625
   leads); once loaded it becomes a true alert showing only new arrivals.
 
+## index.html v1.4 · sync.js v0.7.2 — 2026-08-04
+
+Greg flagged the rent medians as looking low. They were — but the cause was junk in the data, not
+the choice of statistic, and switching to the mean would have hidden it rather than fixed it.
+
+### Fixed
+- **Parking spaces were being counted as studios.** Five listings at $200–$345 with units named
+  "Parking", "PARKING #27". The $345 space at 56 Charlesgate E is what pulled Fenway/Kenmore
+  studios down to $2,038.
+- **Nine more rooms-for-rent were counted as 1BRs.** The previous filter only checked `BedInfo`;
+  these (10 Parker Hill Ave, $900–$950) declare `BedInfo=1` and hide it in the `Unit` field as
+  "2 - Room 5". Now checks **both** fields — verified to catch 23 listings and zero priced at or
+  above $1,800, so no real apartment is caught.
+- **A $99,999 placeholder price** at 115 Salem St #10 moved the North End 2BR mean from $3,734 to
+  $8,109. Prices above $25,000/mo are discarded as placeholders (exactly one in the feed); the
+  listing still counts as inventory, only its price is dropped.
+- A shadowing bug introduced while adding the hover: a `const n` inside the cell callback shadowed
+  the neighborhood name the callback closes over, putting the earlier `matrix[n]` lookup in the
+  temporal dead zone and throwing at render. Syntax checks passed; the verification harness caught
+  it. Renamed to `priced`.
+
+### Changed
+- Kept **median** rather than switching to mean — the $99,999 case is exactly what median protects
+  against. Both are now available: median as the figure, mean in the cell hover alongside the
+  sample size and any listings without a usable price.
+
 ## index.html v1.3 · sync.js v0.7.1 — 2026-08-04
 
 ### Added
