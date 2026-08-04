@@ -1,5 +1,27 @@
 # Changelog
 
+## index.html v1.6 — 2026-08-04
+
+Verified bed counts and agent ad prices now drive the lead half of the report.
+
+### Added
+- **Verified beds override FUB's** wherever a listing has been checked against the agent's own
+  Zillow account (`leadBeds()`). FUB's original value is left untouched in the database — the
+  override happens at render, so it is reversible and nothing is destroyed.
+- **Median asking rent in the Lead Volume cells**, from the agent's own ad. Counted **once per
+  unique listing** regardless of how many leads it drew, and shown as a **median with the mean on
+  hover** — both matching the inventory table, because the two halves are meant to be read against
+  each other. Cells resting on fewer than 3 listings are greyed and italicised.
+- The header caveat is now dynamic: it states how many located leads have a verified bed count
+  rather than asserting the whole column is unreliable. It shrinks as verification lands.
+
+### Impact (Alejandro, the first agent filled)
+- **Studio leads went from 0 to 55.** FUB recorded none of his 15 studios as studios.
+- **73 of 148 located leads changed bed bucket** — half of them.
+- `2 Joy St #10`, his joint-biggest lead generator at 13 leads, moves from 1BR to Studio.
+- West Fenway now reads 25 studio leads at a $2,400 median — a demand signal that did not exist in
+  the report an hour ago.
+
 ## index.html v1.5 — 2026-08-04
 
 ### Added

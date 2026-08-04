@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lead &amp; Listing Report v1.5</title>
+<title>Lead &amp; Listing Report v1.6</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -171,6 +171,8 @@
   .heat-table tr:last-child td { border-bottom: none; }
   .heat-cell { border-radius: 6px; padding: 4px 8px; display: inline-block; min-width: 36px; font-weight: 700; }
   .heat-0 { color: #c8d8e8; }
+  .heat-price { font-size: 11px; color: var(--primary); margin-top: 3px; font-weight: 600; white-space: nowrap; }
+  .heat-price-thin { color: #9bb0c9; font-weight: 400; font-style: italic; cursor: help; }
   .heat-1 { background: #dce8fd; color: #2055ea; }
   .heat-2 { background: #a3c1fa; color: #0f2e8a; }
   .heat-3 { background: #2055ea; color: #fff; }
@@ -293,7 +295,7 @@
 <div class="header">
   <div class="header-left">
     <h1>Lead &amp; Listing Report</h1>
-    <span class="version">v1.5</span>
+    <span class="version">v1.6</span>
   </div>
   <div style="display:flex;align-items:center;gap:16px;">
     <span id="alertSlot"></span>
@@ -467,6 +469,24 @@ function median(nums) {
   return s.length % 2 ? s[mid] : Math.round((s[mid - 1] + s[mid]) / 2);
 }
 
+// FUB's bed count is wrong or missing on roughly half of leads — verified 2026-08-04 against 54 of
+// Alejandro's own Zillow listings: 31 agreed, 15 disagreed, 8 had no count, and not one of his 15
+// studios was recorded as a studio. Where a listing has been checked against the agent's own
+// account, that value wins. FUB's original is left untouched in the database.
+function leadBeds(lead) {
+  const v = agentListings[lead.address];
+  if (v && v.beds != null) return v.beds;
+  return lead.beds;
+}
+function isVerified(lead) {
+  const v = agentListings[lead.address];
+  return !!(v && v.beds != null);
+}
+function leadPrice(lead) {
+  const v = agentListings[lead.address];
+  return v && usablePrice(v.price) ? v.price : null;
+}
+
 function bedsLabel(beds) {
   if (beds === null || beds === undefined) return '?';
   if (beds === 0) return 'Studio';
@@ -528,9 +548,10 @@ function getFilteredLeads() {
     if (agentVal && l.agent !== agentVal) return false;
     if (nbhdVal && l.neighborhood !== nbhdVal) return false;
     if (currentBeds !== null) {
-      if (currentBeds === 'unknown') { if (l.beds !== null && l.beds !== undefined) return false; }
-      else if (currentBeds === 3) { if (l.beds === null || l.beds < 3) return false; }
-      else { if (l.beds !== currentBeds) return false; }
+      const b = leadBeds(l);
+      if (currentBeds === 'unknown') { if (b !== null && b !== undefined) return false; }
+      else if (currentBeds === 3) { if (b === null || b < 3) return false; }
+      else { if (b !== currentBeds) return false; }
     }
     return true;
   });
@@ -548,8 +569,9 @@ function getTopRec() {
   if (!leads.length) return null;
   const groups = {};
   leads.forEach(l => {
-    const key = `${l.neighborhood}|${l.beds !== null ? l.beds : '?'}`;
-    if (!groups[key]) groups[key] = { neighborhood: l.neighborhood, beds: l.beds, count: 0 };
+    const lb = leadBeds(l);
+    const key = `${l.neighborhood}|${lb !== null ? lb : '?'}`;
+    if (!groups[key]) groups[key] = { neighborhood: l.neighborhood, beds: lb, count: 0 };
     groups[key].count++;
   });
   const top = Object.values(groups).sort((a, b) => b.count - a.count)[0];
@@ -636,8 +658,9 @@ function renderRecommendations() {
   // Has location data — show neighborhood × beds recommendations
   const groups = {};
   locLeads.forEach(l => {
-    const key = `${l.neighborhood}|${l.beds !== null ? l.beds : '?'}`;
-    if (!groups[key]) groups[key] = { neighborhood: l.neighborhood, beds: l.beds, count: 0 };
+    const lb = leadBeds(l);
+    const key = `${l.neighborhood}|${lb !== null ? lb : '?'}`;
+    if (!groups[key]) groups[key] = { neighborhood: l.neighborhood, beds: lb, count: 0 };
     groups[key].count++;
   });
 
@@ -676,11 +699,22 @@ function bedCols() { return BEDS_COLS; }
 // reports bedrooms: 0, but the lead that reaches FUB carries bedrooms: "1". Studios are therefore
 // counted inside the 1BR column on the LEAD side. YGL inventory is unaffected — it labels studios
 // correctly — so the Studio row in the listings table is real.
-const BEDS_CAVEAT = 'Lead bed counts come from Zillow via FUB, which reports studios as 1 bedroom — '
-  + 'verified on three units where Zillow’s own listing says 0. Treat the 1BR column as '
-  + '"1BR + studios" and the lead-side Studio column as not-yet-measurable. YGL inventory below '
-  + 'labels studios correctly, so the two halves are not directly comparable on studios.';
-const BEDS_CAVEAT_DOT = `<span class="info-dot info-dot--muted" tabindex="0" aria-label="${BEDS_CAVEAT}">i<span class="info-tip">${BEDS_CAVEAT}</span></span>`;
+// The caveat shrinks as verification lands. Measured against 54 of Alejandro's own listings:
+// FUB agreed on 31, disagreed on 15, and had no count on 8 — and none of his 15 studios were
+// recorded as studios. Unverified rows still carry that risk; verified ones don't.
+function bedsCaveat(leads) {
+  const located = leads.filter(l => l.neighborhood);
+  const ok = located.filter(isVerified).length;
+  const pct = located.length ? Math.round(ok / located.length * 100) : 0;
+  return `${ok} of ${located.length} located leads (${pct}%) have a bed count verified against the `
+    + `agent's own Zillow listing; the rest come from FUB, which was wrong or missing on 43% of the `
+    + `54 listings checked so far — most often recording a studio as a 1BR. Prices are the agent's `
+    + `own asking rent, median per unique listing, counted once however many leads it drew.`;
+}
+function bedsCaveatDot(leads) {
+  const t = bedsCaveat(leads);
+  return `<span class="info-dot info-dot--muted" tabindex="0" aria-label="${t}">i<span class="info-tip">${t}</span></span>`;
+}
 
 function heatClass(count, max) {
   if (!count) return 'heat-0';
@@ -774,16 +808,22 @@ function renderHeatTable(leads) {
   const nbhds = sortNeighborhoods([...new Set(leads.map(l => l.neighborhood).filter(Boolean))]);
   if (!nbhds.length) return '<div class="empty" style="padding:24px;">No neighborhood data for this date range.<br><span style="font-size:12px;">Location is only captured when a renter inquires on a specific Zillow listing.</span></div>';
 
-  // Build count matrix
+  // Count leads, but collect prices per UNIQUE ADDRESS — a listing with 11 leads is still one ad.
+  // Ratified with Greg 2026-08-04: per-listing, median, matching the inventory table below, because
+  // the two halves are meant to be read against each other.
   const matrix = {};
   let maxVal = 0;
   leads.forEach(l => {
     if (!l.neighborhood) return;
     if (!matrix[l.neighborhood]) matrix[l.neighborhood] = {};
     BEDS_COLS.forEach(col => {
-      if (col.match(l.beds)) {
-        matrix[l.neighborhood][col.key] = (matrix[l.neighborhood][col.key] || 0) + 1;
-        maxVal = Math.max(maxVal, matrix[l.neighborhood][col.key]);
+      if (col.match(leadBeds(l))) {
+        const cell = matrix[l.neighborhood][col.key]
+          || (matrix[l.neighborhood][col.key] = { count: 0, byAddress: new Map() });
+        cell.count++;
+        const p = leadPrice(l);
+        if (p != null && l.address && !cell.byAddress.has(l.address)) cell.byAddress.set(l.address, p);
+        maxVal = Math.max(maxVal, cell.count);
       }
     });
   });
@@ -793,10 +833,20 @@ function renderHeatTable(leads) {
   const headers = cols.map(c => `<th>${c.label}</th>`).join('');
   const rows = nbhds.map(n => {
     const cells = cols.map(c => {
-      const cnt = matrix[n]?.[c.key] || 0;
-      return `<td>${cnt ? `<span class="heat-cell ${heatClass(cnt, maxVal)}">${cnt}</span>` : '<span class="heat-0">0</span>'}</td>`;
+      const cell = matrix[n]?.[c.key];
+      if (!cell || !cell.count) return '<td><span class="heat-0">0</span></td>';
+      const prices = [...cell.byAddress.values()];
+      const med = median(prices);
+      const thin = prices.length > 0 && prices.length < 3;
+      const tip = med
+        ? `Median $${med.toLocaleString()} · Mean $${mean(prices).toLocaleString()} · ${prices.length} listing${prices.length !== 1 ? 's' : ''} priced, counted once each`
+        : '';
+      const priceStr = med
+        ? `<div class="heat-price${thin ? ' heat-price-thin' : ''}" title="${tip}">$${med.toLocaleString()}</div>`
+        : '';
+      return `<td><span class="heat-cell ${heatClass(cell.count, maxVal)}">${cell.count}</span>${priceStr}</td>`;
     }).join('');
-    const total = cols.reduce((s, c) => s + (matrix[n]?.[c.key] || 0), 0);
+    const total = cols.reduce((s, c) => s + (matrix[n]?.[c.key]?.count || 0), 0);
     return `<tr><td>${n} <span style="color:var(--muted);font-weight:400;">(${total})</span></td>${cells}</tr>`;
   }).join('');
 
@@ -834,7 +884,7 @@ function renderMoveInTable(leads) {
     if (monthKey !== UNKNOWN_MONTH) total++;
     if (!matrix[l.neighborhood]) matrix[l.neighborhood] = {};
     BEDS_COLS.forEach(col => {
-      if (col.match(l.beds)) {
+      if (col.match(leadBeds(l))) {
         if (!matrix[l.neighborhood][col.key]) matrix[l.neighborhood][col.key] = {};
         matrix[l.neighborhood][col.key][monthKey] = (matrix[l.neighborhood][col.key][monthKey] || 0) + 1;
       }
@@ -940,7 +990,8 @@ function renderLeadCards(leads) {
   if (!page.length) return '<div class="empty">No leads match the current filters.</div>';
 
   return page.map(l => {
-    const bedsStr = l.beds !== null ? bedsLabel(l.beds) : null;
+    const lb = leadBeds(l);
+    const bedsStr = lb !== null && lb !== undefined ? bedsLabel(lb) : null;
     const priceStr = fmtPrice(l.price);
     const actionBtn = l.fub_id
       ? `<a class="link-btn" href="https://app.followupboss.com/2/people/view/${l.fub_id}" target="_blank">View in FUB →</a>`
@@ -1156,8 +1207,8 @@ function render() {
   if (cardNbhd) filteredCards = filteredCards.filter(l => l.neighborhood === cardNbhd);
   if (cardBeds) {
     const b = parseInt(cardBeds);
-    if (b === 3) filteredCards = filteredCards.filter(l => l.beds !== null && l.beds >= 3);
-    else filteredCards = filteredCards.filter(l => l.beds === b);
+    if (b === 3) filteredCards = filteredCards.filter(l => leadBeds(l) !== null && leadBeds(l) >= 3);
+    else filteredCards = filteredCards.filter(l => leadBeds(l) === b);
   }
 
   const cardsHtml  = renderLeadCards(filteredCards);
@@ -1166,7 +1217,7 @@ function render() {
   // Build card filter dropdowns from available data
   const cardAgents = [...new Set(zillowLeads.map(l => l.agent).filter(Boolean))].sort();
   const cardNbhds = sortNeighborhoods([...new Set(zillowLeads.map(l => l.neighborhood).filter(Boolean))]);
-  const cardBedOpts = [...new Set(zillowLeads.map(l => l.beds).filter(b => b !== null))].sort((a, b) => a - b);
+  const cardBedOpts = [...new Set(zillowLeads.map(l => leadBeds(l)).filter(b => b !== null && b !== undefined))].sort((a, b) => a - b);
 
   const agentOpts = cardAgents.map(a => `<option value="${a}" ${cardAgent === a ? 'selected' : ''}>${a}</option>`).join('');
   const nbhdOpts = cardNbhds.map(n => `<option value="${n}" ${cardNbhd === n ? 'selected' : ''}>${n}</option>`).join('');
@@ -1186,14 +1237,15 @@ function render() {
   </div>`;
 
   const locLeadCount = leads.filter(l => l.neighborhood).length;
+  const verifiedCount = leads.filter(l => l.neighborhood && isVerified(l)).length;
   root.innerHTML = `
     ${statsHtml}
     ${recsHtml}
     <div class="two-col">
       <div class="heat-section">
         <div class="section-header">
-          <span class="section-title">Lead Volume by Neighborhood &amp; Beds${BEDS_CAVEAT_DOT}</span>
-          <span class="section-sub">${locLeadCount} of ${leads.length} leads have location</span>
+          <span class="section-title">Lead Volume by Neighborhood &amp; Beds${bedsCaveatDot(leads)}</span>
+          <span class="section-sub">${locLeadCount} of ${leads.length} leads have location · ${verifiedCount} verified beds</span>
         </div>
         ${heatHtml}
       </div>
