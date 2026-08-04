@@ -4,7 +4,7 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.7.2';
+const VERSION = '0.8.0';
 const DATA_FILE = path.join(__dirname, 'public', 'data.json');
 
 // Boston metro ZIP → neighborhood (matches active-ads-combine)
@@ -801,8 +801,20 @@ async function generateDataJson(client, yglListings = []) {
     // table doesn't exist yet — no prices available
   }
 
+  // Manually-filled price/beds from the agents' own Zillow accounts, keyed by address because
+  // leads get reassigned — the agent on a lead isn't necessarily the one whose account holds
+  // the listing. See load-agent-listings.js.
+  let agentListings = {};
+  try {
+    const { rows: alRows } = await client.query('SELECT address, price, beds FROM agent_listings');
+    for (const r of alRows) agentListings[r.address] = { price: r.price, beds: r.beds };
+    console.log(`  Loaded ${alRows.length} manually-filled listings`);
+  } catch {
+    // table doesn't exist yet — nothing filled in
+  }
+
   fs.mkdirSync(path.join(__dirname, 'public'), { recursive: true });
-  fs.writeFileSync(DATA_FILE, JSON.stringify({ generated: new Date().toISOString(), version: VERSION, agents, neighborhoods, leads, yglListings, zillowPrices }, null, 2));
+  fs.writeFileSync(DATA_FILE, JSON.stringify({ generated: new Date().toISOString(), version: VERSION, agents, neighborhoods, leads, yglListings, zillowPrices, agentListings }, null, 2));
   console.log(`  Wrote ${leads.length} leads → public/data.json`);
 }
 
