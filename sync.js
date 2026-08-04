@@ -4,7 +4,7 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.6.0';
+const VERSION = '0.7.0';
 const DATA_FILE = path.join(__dirname, 'public', 'data.json');
 
 // Boston metro ZIP → neighborhood (matches active-ads-combine)
@@ -94,6 +94,51 @@ const YGL_TARGET_ZIPS = {
 };
 const YGL_TARGET_ZIP_SET = new Set(Object.values(YGL_TARGET_ZIPS).flat());
 
+// A target ZIP is not the same as a target neighborhood: 02114 is 61% West End, 02116 is ~48%
+// Midtown/Theatre District, and 14 Brighton listings on Selkirk Rd carry a typo'd 02115 ZIP.
+// Folding those into Beacon Hill / Back Bay / Fenway made inventory look deeper than it is —
+// a Beacon Hill renter will not take a West End unit, the same way a Kenmore renter will not take
+// a West Fenway one. So we separate rather than merge. (Verified 2026-08-04: the LEAD side is
+// already clean — all 305 leads in 02114 are on Beacon Hill streets, all 118 in 02116 are Back Bay.)
+//
+// YGL's own <Neighborhood> field is the reliable signal — it was right about Selkirk Rd and about
+// the Back Bay streets inside 02115, where our ZIP map was wrong.
+// Rules ratified with Greg 2026-08-04.
+
+// Dropped entirely. Brighton = a typo'd ZIP on one building (Selkirk Rd appears 196× under 02135,
+// and has never produced a lead). Allston = Commonwealth Ave 1056–1135, the BU end, well past
+// Kenmore. The rest are a safety net in case another ZIP typo drags a distant neighborhood in.
+const YGL_EXCLUDE = new Set([
+  'brighton', 'allston', 'dorchester', 'longwood', 'seaport district', 'south boston',
+  'charlestown', 'east boston', 'jamaica plain', 'roslindale', 'west roxbury', 'hyde park',
+  'mattapan', 'downtown',
+]);
+
+// The small downtown-adjacent labels report as one combined row.
+const DOWNTOWN_BUCKET = 'Theatre District/Midtown/Chinatown/Financial District';
+const YGL_LABEL_BUCKETS = {
+  'midtown': DOWNTOWN_BUCKET,
+  'theatre district': DOWNTOWN_BUCKET,
+  'chinatown': DOWNTOWN_BUCKET,
+  'financial district': DOWNTOWN_BUCKET,
+  'west end': 'West End', // its own row — 78 listings previously counted as Beacon Hill
+};
+
+function isOutOfArea(yglNeighborhood) {
+  const n = String(yglNeighborhood || '').toLowerCase().trim();
+  return n !== '' && YGL_EXCLUDE.has(n);
+}
+
+// Resolution order: explicit label bucket → Fenway street rulebook → ZIP map.
+// Labels with no bucket (Fenway, Kenmore, Roxbury, Back Bay, blank…) fall through, which is what
+// puts border Roxbury rows where Greg wanted them: Camden St 02118 → South End, Hammond St
+// 02120 → Mission Hill, matching their same-street, same-ZIP siblings.
+function resolveYGLNeighborhood(yglNeighborhood, streetName, houseNo, zip) {
+  const label = String(yglNeighborhood || '').toLowerCase().trim();
+  if (YGL_LABEL_BUCKETS[label]) return YGL_LABEL_BUCKETS[label];
+  return refineFenway(streetName, houseNo, zip) || (zip ? (ZIP_NEIGHBORHOODS[zip] || null) : null);
+}
+
 function xmlTag(xml, tag) {
   const m = xml.match(new RegExp(`<${tag}>([^<]*)<\/${tag}>`));
   return m ? m[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim() : '';
@@ -123,7 +168,11 @@ function parseYGLXml(raw) {
       unit:           xmlTag(block, 'Unit'),
       city:           xmlTag(block, 'City'),
       zip,
-      neighborhood:   zip ? (ZIP_NEIGHBORHOODS[zip] || null) : null,
+      // YGL label buckets first, then the same street rulebook the lead side uses, then the ZIP map
+      neighborhood:   resolveYGLNeighborhood(xmlTag(block, 'Neighborhood'), xmlTag(block, 'StreetName'),
+                        parseInt(xmlTag(block, 'StreetNumber'), 10) || null, zip),
+      // YGL's own neighborhood label — kept for the out-of-area exclusion, not for display
+      ygl_neighborhood: xmlTag(block, 'Neighborhood'),
       beds:           normalizeYGLBeds(xmlTag(block, 'BedInfo') || xmlTag(block, 'Beds')),
       price:          parseInt(xmlTag(block, 'Price'), 10) || null,
       available_date: xmlTag(block, 'AvailableDate'),
@@ -192,7 +241,18 @@ async function fetchYGLListings(apiKey) {
     await new Promise(r => setTimeout(r, 400));
   }
 
-  const listings = all.filter(l => YGL_TARGET_ZIP_SET.has(l.zip));
+  const inTargetZips = all.filter(l => YGL_TARGET_ZIP_SET.has(l.zip));
+  const listings = inTargetZips.filter(l => !isOutOfArea(l.ygl_neighborhood));
+
+  // Never drop rows silently — log what the out-of-area filter removed and why.
+  const excluded = inTargetZips.filter(l => isOutOfArea(l.ygl_neighborhood));
+  if (excluded.length) {
+    const byWhy = {};
+    excluded.forEach(l => { byWhy[l.ygl_neighborhood] = (byWhy[l.ygl_neighborhood] || 0) + 1; });
+    console.log(`  Excluded ${excluded.length} listing(s) in target ZIPs that YGL places outside the target areas:`);
+    Object.entries(byWhy).sort((a, b) => b[1] - a[1]).forEach(([n, c]) => console.log(`    ${n}: ${c}`));
+  }
+
   const byNbhd = {};
   for (const l of listings) {
     byNbhd[l.neighborhood] = (byNbhd[l.neighborhood] || 0) + 1;
@@ -218,6 +278,115 @@ function extractZip(address) {
 
 function getNeighborhood(zip) {
   return zip ? (ZIP_NEIGHBORHOODS[zip] || null) : null;
+}
+
+// ── Fenway street rulebook (v0.7.0) ───────────────────────────────────────────
+// ZIP alone cannot split Fenway: West Fenway (Queensberry, Peterborough, Jersey, Park Dr) and
+// Kenmore (Beacon, Comm Ave, Bay State) are BOTH 02215, while Symphony is 02115. 02115 also
+// contains a sliver of genuine Back Bay (Hereford, Gloucester, Marlborough) that the ZIP map was
+// mislabelling as Fenway. Street name — plus a house-number cut where a street crosses a boundary —
+// is the only way to separate them. Ratified with Greg 2026-08-04.
+
+function normStreetName(s) {
+  return String(s || '').toLowerCase()
+    .replace(/\([^)]*\)/g, ' ')     // YGL writes things like "Boylston St. (bsmt.)"
+    .replace(/[.,#]/g, ' ')
+    .replace(/\b(street|str)\b/g, 'st')
+    .replace(/\b(avenue|av)\b/g, 'ave')
+    .replace(/\b(drive)\b/g, 'dr')
+    .replace(/\b(road)\b/g, 'rd')
+    .replace(/\b(place)\b/g, 'pl')
+    .replace(/\b(east)\b/g, 'e')
+    .replace(/\b(west)\b/g, 'w')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// YGL is inconsistent about the street-type suffix — "Beacon" and "Beacon St." both appear, as do
+// "Aberdeen" and "Aberdeen St". Strip the suffix so both forms reach the same rule.
+const STREET_SUFFIXES = /\s+(st|ave|dr|rd|pl|way|ct|ter|blvd|ln|sq)$/;
+function streetBase(s) { return normStreetName(s).replace(STREET_SUFFIXES, ''); }
+
+const FENWAY_SYMPHONY = 'Fenway/Symphony';
+const WEST_FENWAY     = 'West Fenway';
+const FENWAY_KENMORE  = 'Fenway/Kenmore';
+const BACK_BAY        = 'Back Bay';
+
+// Streets that sit wholly inside one bucket.
+const STREET_BUCKETS = {
+  // West Fenway — the Queensberry/Peterborough/Jersey block west of the Fens
+  'queensberry st': WEST_FENWAY, 'peterborough st': WEST_FENWAY, 'jersey st': WEST_FENWAY,
+  'park dr': WEST_FENWAY, 'kilmarnock st': WEST_FENWAY, 'van ness st': WEST_FENWAY,
+  'ipswich st': WEST_FENWAY, 'lansdowne st': WEST_FENWAY, 'yawkey way': WEST_FENWAY,
+  'fenway': WEST_FENWAY,
+
+  // Fenway/Symphony — 02115 south-east, around Symphony Hall / Northeastern / Berklee
+  'hemenway st': FENWAY_SYMPHONY, 'huntington ave': FENWAY_SYMPHONY, 'norway st': FENWAY_SYMPHONY,
+  'clearway st': FENWAY_SYMPHONY, 'westland ave': FENWAY_SYMPHONY, 'symphony rd': FENWAY_SYMPHONY,
+  'gainsborough st': FENWAY_SYMPHONY, 'saint botolph st': FENWAY_SYMPHONY,
+  'saint stephen st': FENWAY_SYMPHONY, 'edgerly rd': FENWAY_SYMPHONY, 'burbank st': FENWAY_SYMPHONY,
+  'albemarle st': FENWAY_SYMPHONY, 'saint germain st': FENWAY_SYMPHONY,
+  'cumberland st': FENWAY_SYMPHONY, 'stoneholm st': FENWAY_SYMPHONY, 'haviland st': FENWAY_SYMPHONY,
+  'forsyth st': FENWAY_SYMPHONY, 'opera pl': FENWAY_SYMPHONY, 'massachusetts ave': FENWAY_SYMPHONY,
+
+  // Fenway/Kenmore — around Kenmore Sq and Audubon Circle
+  'brookline ave': FENWAY_KENMORE, 'charlesgate e': FENWAY_KENMORE, 'charlesgate w': FENWAY_KENMORE,
+  'aberdeen st': FENWAY_KENMORE, 'bay state rd': FENWAY_KENMORE, 'deerfield st': FENWAY_KENMORE,
+  'keswick st': FENWAY_KENMORE, 'maitland st': FENWAY_KENMORE, 'buswell st': FENWAY_KENMORE,
+  'mountfort st': FENWAY_KENMORE, 'raleigh st': FENWAY_KENMORE, 'sherborn st': FENWAY_KENMORE,
+  'medfield st': FENWAY_KENMORE, 'miner st': FENWAY_KENMORE,
+
+  // Genuine Back Bay inside 02115 — previously mislabelled Fenway by the ZIP map
+  'hereford st': BACK_BAY, 'gloucester st': BACK_BAY, 'marlborough st': BACK_BAY,
+  'exeter st': BACK_BAY, 'fairfield st': BACK_BAY, 'dartmouth st': BACK_BAY,
+};
+
+// Streets that cross a boundary — split by house number. Cuts confirmed by Greg 2026-08-04:
+// all four are the Massachusetts Ave crossing, except Boylston which Greg set at 1000.
+const STREET_CUTS = {
+  'beacon st':         { cut: 500,  below: BACK_BAY, atOrAbove: FENWAY_KENMORE },
+  'commonwealth ave':  { cut: 483,  below: BACK_BAY, atOrAbove: FENWAY_KENMORE },
+  'newbury st':        { cut: 360,  below: BACK_BAY, atOrAbove: FENWAY_KENMORE },
+  'boylston st':       { cut: 1000, below: BACK_BAY, atOrAbove: WEST_FENWAY },
+};
+
+// Only refine inside the Fenway ZIPs — everywhere else the ZIP map is already correct.
+const FENWAY_ZIPS = new Set(['02115', '02215']);
+
+// Suffix-stripped lookups, so "Beacon" resolves the same as "Beacon St."
+const BUCKETS_BY_BASE = Object.fromEntries(Object.entries(STREET_BUCKETS).map(([k, v]) => [streetBase(k), v]));
+const CUTS_BY_BASE    = Object.fromEntries(Object.entries(STREET_CUTS).map(([k, v]) => [streetBase(k), v]));
+
+// street: name without the house number. houseNo: leading integer, or null if unknown.
+// Returns a refined neighborhood, or null to fall back to the ZIP map.
+function refineFenway(street, houseNo, zip) {
+  if (!FENWAY_ZIPS.has(zip)) return null;
+  const s = normStreetName(street);
+  if (!s) return null;
+  const base = streetBase(s);
+
+  const cut = STREET_CUTS[s] || CUTS_BY_BASE[base];
+  if (cut) {
+    if (houseNo == null) return null; // no number → can't place it; keep the ZIP default
+    return houseNo < cut.cut ? cut.below : cut.atOrAbove;
+  }
+  return STREET_BUCKETS[s] || BUCKETS_BY_BASE[base] || null;
+}
+
+// Pull "89 Park Dr" out of "89 Park Dr #23, Boston, MA, 02215"
+function splitStreet(address) {
+  const first = String(address || '').split(',')[0] || '';
+  const bare = first.replace(/#.*$/, '').replace(/\bapt\b.*$/i, '').trim();
+  const m = bare.match(/^(\d+)\s+(.*)$/);
+  return m ? { houseNo: parseInt(m[1], 10), street: m[2] } : { houseNo: null, street: bare };
+}
+
+// Single entry point: ZIP map first, then street-level refinement inside the Fenway ZIPs.
+function resolveNeighborhood(address, zip) {
+  const base = getNeighborhood(zip);
+  if (!address || !zip) return base;
+  const { houseNo, street } = splitStreet(address);
+  return refineFenway(street, houseNo, zip) || base;
 }
 
 function normalizeBeds(raw) {
@@ -322,7 +491,7 @@ async function processLead(person, apiKey) {
     lead_date: person.created ? toEasternDate(person.created) : null,
     address,
     zip,
-    neighborhood: getNeighborhood(zip),
+    neighborhood: resolveNeighborhood(address, zip),
     beds: prop?.bedrooms != null ? normalizeBeds(prop.bedrooms) : null,
     price: prop?.price ? parseInt(prop.price, 10) || null : null,
     zillow_url: (prop?.url && String(prop.url).includes('zillow')) ? prop.url : null,
@@ -630,7 +799,7 @@ async function enrichNullAddressLeads(client, apiKey) {
 
     if (address || moveIn) {
       const zip = prop?.code || extractZip(address);
-      const neighborhood = getNeighborhood(zip);
+      const neighborhood = resolveNeighborhood(address, zip);
       const beds = prop?.bedrooms != null ? normalizeBeds(prop.bedrooms) : null;
       const price = prop?.price ? parseInt(prop.price, 10) || null : null;
       const zillow_url = (prop?.url && String(prop.url).includes('zillow')) ? prop.url : null;
@@ -678,7 +847,7 @@ async function enrichNullMoveInLeads(client, apiKey) {
 
     if (hasNewMoveIn || hasNewAddress) {
       const zip = prop?.code || extractZip(newAddress);
-      const neighborhood = getNeighborhood(zip);
+      const neighborhood = resolveNeighborhood(newAddress, zip);
       const beds = prop?.bedrooms != null ? normalizeBeds(prop.bedrooms) : null;
       const price = prop?.price ? parseInt(prop.price, 10) || null : null;
       const zillow_url = (prop?.url && String(prop.url).includes('zillow')) ? prop.url : null;

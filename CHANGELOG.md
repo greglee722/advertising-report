@@ -1,5 +1,51 @@
 # Changelog
 
+## sync.js v0.7.0 — 2026-08-04
+
+Neighborhood accuracy. ZIP codes do not align with the neighborhoods this report reports on, and
+both halves were wrong in ways that cancelled out on the surface and compounded underneath.
+
+### Added
+- **Fenway street rulebook.** ZIP cannot split Fenway — West Fenway (Queensberry, Peterborough,
+  Jersey, Park Dr) and Kenmore (Beacon, Comm Ave, Bay State) are both 02215, Symphony is 02115.
+  Street name plus a house-number cut where a street crosses a boundary. Cuts ratified with Greg:
+  Beacon 500, Comm Ave 483, Newbury 360 (each the Mass Ave crossing), Boylston 1000.
+  Applied identically to leads and YGL so the two halves of the report stay comparable.
+- **Correct neighborhood labelling for YGL inventory** (`YGL_EXCLUDE` / `YGL_LABEL_BUCKETS` /
+  `resolveYGLNeighborhood`). A target ZIP is not a target neighborhood: 02114 is 61% West End and
+  02116 ~48% Midtown/Theatre District. Mislabelled inventory now gets its own row rather than being
+  folded into its neighbour — a Beacon Hill renter will not take a West End unit. West End is its
+  own row (78); Midtown, Theatre District, Chinatown and Financial District report as one combined
+  row (61); Roxbury border rows fall through to the ZIP map (Camden St → South End, Hammond St →
+  Mission Hill). Only genuine data errors are dropped: Brighton (14 — a typo'd ZIP on Selkirk Rd,
+  which appears 196× under 02135 and has never produced a lead) and Allston (7 — Commonwealth Ave
+  1056–1135, past Kenmore). Every exclusion is logged with counts, never silent.
+- `backfill-neighborhoods.js` — recomputes `fub_leads.neighborhood` under the new rulebook. Dry-run
+  by default; `--apply` writes inside a transaction, re-reading each row and skipping any a
+  concurrent sync has touched.
+
+### Fixed
+- **02115 Back Bay leakage.** Hereford, Gloucester and Marlborough are Back Bay streets that the ZIP
+  map filed under Fenway.
+- Street-name matching is now suffix- and parenthetical-tolerant — YGL writes `Beacon`,
+  `Beacon St.` and `Boylston St. (bsmt.)` for the same streets, and 8 listings were falling through.
+
+### Impact
+- **374 of 985 addressed leads (38%) reassigned.**
+- YGL inventory resolves to 10 correctly-labelled rows: Mission Hill 205 · West Fenway 157 ·
+  Fenway/Symphony 142 · Back Bay 107 · West End 82 · North End 70 ·
+  Theatre District/Midtown/Chinatown/Financial District 61 · Fenway/Kenmore 58 · Beacon Hill 55 ·
+  South End 47 = 984 listings, all priced, 213 studios. 21 dropped as data errors.
+- **Beacon Hill's inventory shortage was being materially understated** — 305 leads over 120 days
+  against 55 real listings, not the 137 the ZIP map implied. Verified the lead side is already
+  clean (all 305 are on Beacon Hill streets, none in the West End), so this corrects the inventory
+  side only and does not introduce a false gap.
+
+### Note
+- YGL's `<Neighborhood>` field is more reliable than previously documented. An earlier note called
+  it "agent-entered and dirty" on the basis of 02115 rows tagged Brighton and Back Bay — both tags
+  were correct and the ZIP map was wrong.
+
 ## sync.js v0.6.0 · index.html v0.9 — 2026-08-04
 
 Renamed to **Lead & Listing Report** (header only — the repo, Pages URL and Supabase OAuth

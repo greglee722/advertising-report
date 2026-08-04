@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lead &amp; Listing Report v0.9</title>
+<title>Lead &amp; Listing Report v1.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -278,7 +278,7 @@
 <div class="header">
   <div class="header-left">
     <h1>Lead &amp; Listing Report</h1>
-    <span class="version">v0.9</span>
+    <span class="version">v1.0</span>
   </div>
   <div style="display:flex;align-items:center;gap:16px;">
     <span class="sync-time" id="syncTime">Loading...</span>
@@ -403,6 +403,30 @@ let cardNbhd = '';
 let cardBeds = '';
 
 // ── Utilities ────────────────────────────────────────────────────────────────
+
+// Fixed row order (Greg, 2026-08-04) applied to every neighborhood table, so row N is the same
+// neighborhood in the lead tables and the inventory table and the two can be read side by side.
+// Anything not listed here sorts after, alphabetically — never dropped.
+const NEIGHBORHOOD_ORDER = [
+  'Beacon Hill',
+  'West End',
+  'Back Bay',
+  'Fenway/Symphony',
+  'Fenway/Kenmore',
+  'West Fenway',
+  'Mission Hill',
+  'North End',
+  'South End',
+  'Theatre District/Midtown/Chinatown/Financial District',
+];
+
+function sortNeighborhoods(names) {
+  const rank = n => {
+    const i = NEIGHBORHOOD_ORDER.indexOf(n);
+    return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+  };
+  return [...names].sort((a, b) => rank(a) - rank(b) || String(a).localeCompare(String(b)));
+}
 
 function bedsLabel(beds) {
   if (beds === null || beds === undefined) return '?';
@@ -653,7 +677,7 @@ function renderYGLSection() {
     });
   });
 
-  const nbhds = Object.keys(matrix).sort();
+  const nbhds = sortNeighborhoods(Object.keys(matrix));
   if (!nbhds.length) return '';
 
   const cols = bedCols();
@@ -685,7 +709,7 @@ function renderYGLSection() {
 }
 
 function renderHeatTable(leads) {
-  const nbhds = [...new Set(leads.map(l => l.neighborhood).filter(Boolean))].sort();
+  const nbhds = sortNeighborhoods([...new Set(leads.map(l => l.neighborhood).filter(Boolean))]);
   if (!nbhds.length) return '<div class="empty" style="padding:24px;">No neighborhood data for this date range.<br><span style="font-size:12px;">Location is only captured when a renter inquires on a specific Zillow listing.</span></div>';
 
   // Build count matrix
@@ -755,7 +779,7 @@ function renderMoveInTable(leads) {
     });
   });
 
-  const nbhds = Object.keys(matrix).sort();
+  const nbhds = sortNeighborhoods(Object.keys(matrix));
   if (!nbhds.length) return '';
 
   const cols = bedCols();
@@ -966,7 +990,7 @@ function render() {
 
   // Build card filter dropdowns from available data
   const cardAgents = [...new Set(zillowLeads.map(l => l.agent).filter(Boolean))].sort();
-  const cardNbhds = [...new Set(zillowLeads.map(l => l.neighborhood).filter(Boolean))].sort();
+  const cardNbhds = sortNeighborhoods([...new Set(zillowLeads.map(l => l.neighborhood).filter(Boolean))]);
   const cardBedOpts = [...new Set(zillowLeads.map(l => l.beds).filter(b => b !== null))].sort((a, b) => a - b);
 
   const agentOpts = cardAgents.map(a => `<option value="${a}" ${cardAgent === a ? 'selected' : ''}>${a}</option>`).join('');
@@ -1147,7 +1171,7 @@ async function init() {
 
     // Populate neighborhood dropdown
     const nbhdSel = document.getElementById('nbhdFilter');
-    (data.neighborhoods || []).forEach(n => {
+    sortNeighborhoods(data.neighborhoods || []).forEach(n => {
       const opt = document.createElement('option');
       opt.value = n; opt.textContent = n;
       nbhdSel.appendChild(opt);
