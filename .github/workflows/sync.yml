@@ -2,7 +2,7 @@ name: Sync FUB Leads
 
 on:
   schedule:
-    - cron: '0 12 * * 1-5'   # 12:00 UTC = 7am EST / 8am EDT, weekdays only
+    - cron: '0 12,15,18,21 * * 1-5'   # 12/15/18/21 UTC = 8am/11am/2pm/5pm EDT, weekdays only
   workflow_dispatch:           # manual trigger via GitHub UI
 
 jobs:

@@ -4,7 +4,7 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.5.0';
+const VERSION = '0.6.0';
 const DATA_FILE = path.join(__dirname, 'public', 'data.json');
 
 // Boston metro ZIP → neighborhood (matches active-ads-combine)
@@ -83,13 +83,14 @@ function httpsGet(url, apiKey) {
 
 // ── YGL Integration ───────────────────────────────────────────────────────────
 
-// Only fetch inventory for these 5 neighborhoods
+// Only fetch inventory for these target neighborhoods
 const YGL_TARGET_ZIPS = {
-  'Fenway':      ['02115', '02215'],
-  'Back Bay':    ['02116', '02117', '02199'],
-  'South End':   ['02118'],
-  'North End':   ['02109', '02113'],
-  'Beacon Hill': ['02108', '02114'],
+  'Fenway':       ['02115', '02215'],
+  'Back Bay':     ['02116', '02117', '02199'],
+  'South End':    ['02118'],
+  'North End':    ['02109', '02113'],
+  'Beacon Hill':  ['02108', '02114'],
+  'Mission Hill': ['02120'],
 };
 const YGL_TARGET_ZIP_SET = new Set(Object.values(YGL_TARGET_ZIPS).flat());
 
@@ -98,11 +99,17 @@ function xmlTag(xml, tag) {
   return m ? m[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim() : '';
 }
 
+// YGL BedInfo is free-ish text. Rules agreed with Greg 2026-08-04:
+//   'Studio' / '0'        → 0
+//   '1 split' / '2 split' → 1 / 2  (count the beds, ignore the layout)
+//   '1.5' / '2.5'         → 1 / 2  (floor decimals to the whole bed)
+//   'Room for Rent in X'  → null   (excluded — not a whole-unit listing)
 function normalizeYGLBeds(bedInfo) {
   if (!bedInfo) return null;
   const s = String(bedInfo).toLowerCase().trim();
+  if (s.startsWith('room for rent')) return null;
   if (s === 'studio' || s === '0') return 0;
-  const n = parseInt(s, 10);
+  const n = parseInt(s, 10); // truncates '1.5' → 1 and reads the leading int of '1 split'
   return isNaN(n) || n < 0 ? null : n;
 }
 
@@ -125,10 +132,9 @@ function parseYGLXml(raw) {
   }).filter(l => l.id);
 }
 
-async function fetchYGLListings(apiKey) {
-  // YGL API doesn't support zip filtering — fetch all and filter post-fetch to 5 target neighborhoods
+function fetchYGLPage(apiKey, pageIndex) {
   return new Promise((resolve) => {
-    const body = `key=${encodeURIComponent(apiKey)}&status=ONMARKET`;
+    const body = `key=${encodeURIComponent(apiKey)}&status=ONMARKET&page_index=${pageIndex}`;
     const req = require('https').request({
       hostname: 'www.yougotlistings.com',
       path: '/api/rentals/search.php',
@@ -137,27 +143,72 @@ async function fetchYGLListings(apiKey) {
     }, (res) => {
       let raw = '';
       res.on('data', c => raw += c);
-      res.on('end', () => {
-        try {
-          const all = parseYGLXml(raw);
-          const listings = all.filter(l => YGL_TARGET_ZIP_SET.has(l.zip));
-          const byNbhd = {};
-          for (const l of listings) {
-            byNbhd[l.neighborhood] = (byNbhd[l.neighborhood] || 0) + 1;
-          }
-          console.log(`  Got ${listings.length}/${all.length} YGL listings (5 target neighborhoods)`);
-          Object.entries(byNbhd).forEach(([n, c]) => console.log(`    ${n}: ${c}`));
-          resolve(listings);
-        } catch (e) {
-          console.warn('  YGL parse error:', e.message);
-          resolve([]);
-        }
-      });
+      res.on('end', () => resolve(raw));
     });
-    req.on('error', (e) => { console.warn('  YGL fetch error:', e.message); resolve([]); });
+    req.on('error', (e) => { console.warn(`  YGL page ${pageIndex} error:`, e.message); resolve(''); });
     req.write(body);
     req.end();
   });
+}
+
+// YGL paginates via `page_index` (100/page) and reports the full count in <Total>.
+// Earlier versions requested page 1 only and saw ~100 of ~2,600 listings.
+// The API ignores zip[] params, so target-neighborhood filtering is done post-fetch.
+async function fetchYGLListings(apiKey) {
+  const MAX_PAGES = 60; // safety stop: 6,000 listings, well above the ~2,600 currently on-market
+  const seen = new Set();
+  const all = [];
+  let total = null;
+
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const raw = await fetchYGLPage(apiKey, page);
+    if (!raw) break;
+
+    if (total === null) {
+      const m = raw.match(/<Total>(\d+)<\/Total>/);
+      total = m ? parseInt(m[1], 10) : null;
+      if (total) console.log(`  YGL reports ${total} on-market listings`);
+    }
+
+    let parsed;
+    try {
+      parsed = parseYGLXml(raw);
+    } catch (e) {
+      console.warn(`  YGL parse error on page ${page}:`, e.message);
+      break;
+    }
+    if (!parsed.length) break;
+
+    let fresh = 0;
+    for (const l of parsed) {
+      if (seen.has(l.id)) continue; // guard against a page param that silently no-ops
+      seen.add(l.id);
+      all.push(l);
+      fresh++;
+    }
+    if (!fresh) break;
+
+    if (total !== null && all.length >= total) break;
+    await new Promise(r => setTimeout(r, 400));
+  }
+
+  const listings = all.filter(l => YGL_TARGET_ZIP_SET.has(l.zip));
+  const byNbhd = {};
+  for (const l of listings) {
+    byNbhd[l.neighborhood] = (byNbhd[l.neighborhood] || 0) + 1;
+  }
+  console.log(`  Got ${listings.length}/${all.length} YGL listings (target neighborhoods)`);
+  if (total !== null && all.length < total) {
+    // YGL only sorts by updated_at desc (sort_name rejects other fields with a 400), and listings
+    // are updated while we walk the pages, so a small shortfall is expected drift, not a fault.
+    // Warn only when the gap is big enough to mean genuinely missed pages.
+    const pct = all.length / total;
+    const msg = `fetched ${all.length} of ${total} reported listings (${(pct * 100).toFixed(1)}%)`;
+    if (pct < 0.95) console.warn(`  WARNING: ${msg} — pagination may be truncated`);
+    else console.log(`  ${msg} — small gap is expected pagination drift`);
+  }
+  Object.entries(byNbhd).forEach(([n, c]) => console.log(`    ${n}: ${c}`));
+  return listings;
 }
 
 function extractZip(address) {
@@ -445,7 +496,9 @@ async function fetchZpidPrice(zpid, rapidApiKey) {
       res.on('end', () => {
         try {
           const r = JSON.parse(data);
-          const beds = r.bedrooms || null;
+          // Zillow returns bedrooms: 0 for studios. `r.bedrooms || null` coerced that 0 to null,
+          // silently erasing every studio from the dataset — check for null explicitly.
+          const beds = r.bedrooms == null ? null : normalizeBeds(r.bedrooms);
           const history = r.priceHistory || [];
           // Rental prices are monthly (< $20k); sale prices are much higher
           const rentalEntry = history.find(e => e.price && e.price < 20000);
@@ -676,11 +729,11 @@ async function main() {
   if (people.length > 0) {
     console.log('\nFetching property data from events...');
     // Batch event fetches to avoid FUB rate limits (~100 req/min unregistered)
-    // Backfill (large sets): 3 concurrent, 1s between batches
+    // Backfill (large sets): 2 concurrent, 1.5s between batches (~80 req/min)
     // Daily sync (small sets): 5 concurrent, 400ms between batches (~75 req/min)
     const isBackfill = people.length > 100;
-    const BATCH = isBackfill ? 3 : 5;
-    const DELAY = isBackfill ? 1000 : 400;
+    const BATCH = isBackfill ? 2 : 5;
+    const DELAY = isBackfill ? 1500 : 400;
     const leads = [];
     for (let i = 0; i < people.length; i += BATCH) {
       const batch = people.slice(i, i + BATCH);
@@ -714,9 +767,16 @@ async function main() {
     await enrichNullMoveInLeads(client, apiKey);
   }
 
+  // Zillow price enrichment is PAUSED (v0.6.0, 2026-08-04).
+  // Nothing in the report reads these prices any more: the address is resolved by Google-searching
+  // the lead's street address, which can land on a neighbouring unit or another brokerage's post,
+  // so the result can't be called "the price our agent advertised". Re-enable with ZILLOW_PRICES=1
+  // once we have a source that is genuinely the agent's own ad (YGL or Zillow Rental Manager).
   const rapidApiKey = process.env.RAPIDAPI_KEY;
   const serperApiKey = process.env.SERPER_API_KEY;
-  if (rapidApiKey && serperApiKey) {
+  if (!process.env.ZILLOW_PRICES) {
+    console.log('\nZillow price enrichment paused (set ZILLOW_PRICES=1 to re-enable)');
+  } else if (rapidApiKey && serperApiKey) {
     console.log('\nEnriching Zillow prices...');
     await enrichZillowPrices(client, rapidApiKey, serperApiKey);
   } else {

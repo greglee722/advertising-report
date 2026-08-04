@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Advertising Report v0.8</title>
+<title>Lead &amp; Listing Report v0.9</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -52,6 +52,13 @@
   select { border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; font-size: 12px; font-family: var(--font-body); font-weight: 600; color: var(--text); background: var(--card); cursor: pointer; transition: border-color var(--transition); }
   select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(32,85,234,.1); }
   .filter-sep { width: 1px; height: 20px; background: var(--border); }
+  .date-range { display: flex; align-items: center; gap: 6px; margin-left: 8px; }
+  .date-range input[type="date"] { border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; font-size: 12px; font-family: var(--font-body); font-weight: 600; color: var(--text); background: var(--card); cursor: pointer; transition: border-color var(--transition); }
+  .date-range input[type="date"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(32,85,234,.1); }
+  .date-range input.active-range { border-color: var(--primary); background: var(--primary-light); }
+  .date-range-sep { font-size: 11px; color: var(--muted); font-weight: 600; }
+  .date-range button { border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px; font-size: 12px; font-family: var(--font-body); font-weight: 600; color: var(--muted); background: var(--card); cursor: pointer; transition: all var(--transition); }
+  .date-range button:hover { background: var(--primary-light); color: var(--primary); }
 
   /* Main layout */
   .main { max-width: 1400px; margin: 0 auto; padding: 20px 28px; }
@@ -95,17 +102,15 @@
   .ygl-3 { background: #f2bc44; color: #fff; }
   .ygl-4 { background: #d4960a; color: #fff; }
 
-  /* Price table */
-  .price-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px; }
-  .price-table { width: 100%; border-collapse: collapse; }
-  .price-table th { padding: 10px 12px; font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; background: #f0fffe; border-bottom: 1px solid rgba(53,217,218,.3); letter-spacing: .5px; text-transform: uppercase; }
-  .price-table th:first-child { text-align: left; }
-  .price-table td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #eef5fb; text-align: center; min-width: 80px; transition: background var(--transition); }
-  .price-table td:first-child { font-weight: 600; text-align: left; color: var(--text); }
-  .price-table tr:hover td { background: #f0fffe; }
-  .price-table tr:last-child td { border-bottom: none; }
-  .price-cell { font-weight: 700; color: var(--green); font-size: 13px; }
-  .price-na { color: #ccc; font-size: 12px; }
+  /* Hover/focus explainer dot */
+  .info-dot { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; margin-left: 6px; border-radius: 50%; background: rgba(122,88,0,.15); color: #7a5800; font-family: var(--font-body); font-size: 10px; font-weight: 700; font-style: italic; cursor: help; transition: background var(--transition); }
+  .info-dot:hover, .info-dot:focus { background: rgba(122,88,0,.3); outline: none; }
+  .info-dot--muted { background: #e4e9f1; color: var(--muted); }
+  .info-dot--muted:hover, .info-dot--muted:focus { background: #cbd5e1; }
+  .info-tip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: 280px; padding: 10px 12px; background: #173950; color: #fff; border-radius: 8px; font-size: 11px; font-weight: 400; font-style: normal; line-height: 1.5; letter-spacing: 0; text-align: left; text-transform: none; box-shadow: var(--shadow-md); opacity: 0; visibility: hidden; transition: opacity var(--transition), visibility var(--transition); z-index: 20; pointer-events: none; }
+  .info-tip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #173950; }
+  .info-dot:hover .info-tip, .info-dot:focus .info-tip { opacity: 1; visibility: visible; }
+  @media (max-width: 600px) { .info-tip { width: 200px; left: auto; right: -8px; transform: none; } .info-tip::after { left: auto; right: 12px; transform: none; } }
 
   /* Move-in demand table */
   .movein-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px; }
@@ -122,6 +127,7 @@
   .month-jul { background: #d1fae5; color: #065f46; }
   .month-jun { background: #dbeafe; color: #1e40af; }
   .month-other { background: #f3e8ff; color: #6b21a8; }
+  .month-unknown { background: #f1f5f9; color: #64748b; border: 1px dashed #cbd5e1; }
   .movein-empty { color: #cbd5e1; font-size: 12px; }
   .movein-note { padding: 10px 22px; font-size: 11px; color: var(--muted); border-top: 1px solid #f0ecf9; }
 
@@ -224,10 +230,9 @@
     .rec-card { padding: 12px 14px; }
     .two-col { gap: 14px; margin-bottom: 14px; }
     .section-header { padding: 12px 14px; }
-    .heat-section, .agent-section, .price-section, .movein-section, .cards-section, .ygl-section { overflow-x: auto; }
-    .heat-table, .price-table, .movein-table, .ygl-table { min-width: 420px; }
+    .heat-section, .agent-section, .movein-section, .cards-section, .ygl-section { overflow-x: auto; }
+    .heat-table, .movein-table, .ygl-table { min-width: 420px; }
     .heat-table td, .heat-table th { padding: 8px 8px; font-size: 12px; }
-    .price-table td, .price-table th { padding: 8px 8px; font-size: 12px; }
     .ygl-table td, .ygl-table th { padding: 7px 8px; font-size: 12px; }
     .agent-row { padding: 9px 14px; }
     .cards-list { padding: 10px 12px; gap: 8px; }
@@ -258,7 +263,7 @@
 <div id="loginOverlay">
   <div class="login-card">
     <div style="margin-bottom:10px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2055ea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-    <h2>Advertising Report</h2>
+    <h2>Lead &amp; Listing Report</h2>
     <p>Internal admin access only</p>
     <button class="btn-google" onclick="signInWithGoogle()">
       <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
@@ -272,8 +277,8 @@
 
 <div class="header">
   <div class="header-left">
-    <h1>Advertising Report</h1>
-    <span class="version">v0.8</span>
+    <h1>Lead &amp; Listing Report</h1>
+    <span class="version">v0.9</span>
   </div>
   <div style="display:flex;align-items:center;gap:16px;">
     <span class="sync-time" id="syncTime">Loading...</span>
@@ -290,6 +295,12 @@
       <button onclick="setDate('7d')">7 Days</button>
       <button onclick="setDate('30d')">30 Days</button>
       <button onclick="setDate('all')">All Time</button>
+    </div>
+    <div class="date-range">
+      <input type="date" id="dateStart" onchange="setCustomRange()" aria-label="Start date">
+      <span class="date-range-sep">to</span>
+      <input type="date" id="dateEnd" onchange="setCustomRange()" aria-label="End date">
+      <button type="button" id="dateRangeClear" onclick="clearCustomRange()" style="display:none;">Clear</button>
     </div>
   </div>
   <div class="filter-sep"></div>
@@ -381,8 +392,9 @@ async function checkAuth() {
 const PAGE_SIZE = 25;
 let allLeads     = [];
 let allYGL       = [];
-let zillowPrices = {};
 let currentDate = 'yesterday';
+let customStart = '';
+let customEnd   = '';
 let currentBeds = null;
 let currentPage = 1;
 let currentView = 'dashboard';
@@ -444,10 +456,12 @@ function getFilteredLeads() {
   if (currentDate === 'yesterday') minDate = yesterday();
   else if (currentDate === '7d') minDate = daysAgo(7);
   else if (currentDate === '30d') minDate = daysAgo(30);
+  else if (currentDate === 'custom') minDate = customStart || null;
 
   return allLeads.filter(l => {
     if (minDate && l.date < minDate) return false;
     if (currentDate === 'yesterday' && l.date !== yesterday()) return false;
+    if (currentDate === 'custom' && customEnd && l.date > customEnd) return false;
     if (agentVal && l.agent !== agentVal) return false;
     if (nbhdVal && l.neighborhood !== nbhdVal) return false;
     if (currentBeds !== null) {
@@ -465,24 +479,6 @@ function getYesterdayLeads() {
 
 // ── Render ─────────────────────────────────────────────────────────────────────
 
-function getLeadAvgPrice(neighborhood, beds) {
-  const nbhd = (neighborhood || '').toLowerCase();
-  const col = beds !== null ? BEDS_COLS.find(c => c.match(beds)) : null;
-  const prices = allLeads
-    .filter(l => {
-      if (!l.address || !l.neighborhood) return false;
-      const ln = l.neighborhood.toLowerCase();
-      const nameMatch = ln === nbhd || ln.includes(nbhd) || nbhd.includes(ln);
-      if (!nameMatch) return false;
-      if (col && !col.match(l.beds)) return false;
-      return true;
-    })
-    .map(l => zillowPrices[l.address]?.price)
-    .filter(p => p != null);
-  if (!prices.length) return null;
-  return Math.round(prices.reduce((s, p) => s + p, 0) / prices.length);
-}
-
 function getTopRec() {
   const leads = getYesterdayLeads().filter(l => l.neighborhood);
   if (!leads.length) return null;
@@ -494,7 +490,6 @@ function getTopRec() {
   });
   const top = Object.values(groups).sort((a, b) => b.count - a.count)[0];
   if (!top) return null;
-  top.price = getLeadAvgPrice(top.neighborhood, top.beds);
   return top;
 }
 
@@ -504,20 +499,17 @@ function renderStats(leads) {
   leads.forEach(l => { if (l.neighborhood) nbhds[l.neighborhood] = (nbhds[l.neighborhood] || 0) + 1; });
   const topNbhd = Object.entries(nbhds).sort((a, b) => b[1] - a[1])[0];
   const topRec = getTopRec();
-  const recPriceStr = topRec?.price ? ` · ${fmtPrice(topRec.price)}` : '';
-  const recPriceSrc = topRec ? (topRec.price ? '<div style="font-size:10px;color:var(--muted);margin-top:2px;">Avg. Zillow listing price</div>' : '<div style="font-size:10px;color:var(--muted);margin-top:2px;">No price data available</div>') : '';
 
-  // Move-in month breakdown
+  // Move-in month breakdown — Unknown is shown in the summary so the counts add up to the lead
+  // total, but it can never be the headline "Top Move-In" month.
   const moveInMonths = {};
   leads.forEach(l => {
-    if (!l.move_in) return;
-    const d = new Date(l.move_in + 'T12:00:00Z');
-    if (isNaN(d.getTime())) return;
-    const m = MONTH_NAMES[d.getUTCMonth()];
+    const m = moveInMonth(l);
     moveInMonths[m] = (moveInMonths[m] || 0) + 1;
   });
-  const sortedMoveIn = Object.entries(moveInMonths).sort((a, b) => MONTH_NAMES.indexOf(a[0]) - MONTH_NAMES.indexOf(b[0]));
-  const topMoveIn = sortedMoveIn.length ? sortedMoveIn.reduce((a, b) => b[1] > a[1] ? b : a) : null;
+  const sortedMoveIn = Object.entries(moveInMonths).sort((a, b) => monthOrder(a[0]) - monthOrder(b[0]));
+  const knownMoveIn = sortedMoveIn.filter(([m]) => m !== UNKNOWN_MONTH);
+  const topMoveIn = knownMoveIn.length ? knownMoveIn.reduce((a, b) => b[1] > a[1] ? b : a) : null;
   const moveInSummary = sortedMoveIn.map(([m, c]) => `${m}: ${c}`).join(' · ');
 
   return `
@@ -525,7 +517,7 @@ function renderStats(leads) {
       <div class="stat-card">
         <div class="label">Total Leads</div>
         <div class="value">${total}</div>
-        <div class="sub">${currentDate === 'yesterday' ? 'yesterday' : currentDate === '7d' ? 'last 7 days' : currentDate === '30d' ? 'last 30 days' : 'all time'}</div>
+        <div class="sub">${dateRangeLabel()}</div>
       </div>
       <div class="stat-card">
         <div class="label">Top Neighborhood</div>
@@ -535,8 +527,7 @@ function renderStats(leads) {
       <div class="stat-card">
         <div class="label">Top Ad Recommendation</div>
         <div class="value" style="font-size:16px;line-height:1.2;">${topRec ? bedsLabel(topRec.beds) + ' in ' + topRec.neighborhood : '—'}</div>
-        <div class="sub">${topRec ? topRec.count + ' lead' + (topRec.count !== 1 ? 's' : '') + ' yesterday' + recPriceStr : 'no data'}</div>
-        ${recPriceSrc}
+        <div class="sub">${topRec ? topRec.count + ' lead' + (topRec.count !== 1 ? 's' : '') + ' yesterday' : 'no data'}</div>
       </div>
       <div class="stat-card" style="border-left-color:#7c3aed;">
         <div class="label">Top Move-In</div>
@@ -588,19 +579,13 @@ function renderRecommendations() {
 
   const sorted = Object.values(groups).sort((a, b) => b.count - a.count).slice(0, 3);
   const cards = sorted.map((g, i) => {
-    const displayPrice = getLeadAvgPrice(g.neighborhood, g.beds);
     const label = ['#1 Pick', '#2 Pick', '#3 Pick'][i];
     const bedsStr = bedsLabel(g.beds);
-    const priceStr = displayPrice ? ` · avg ${fmtPrice(displayPrice)}` : '';
-    const priceSrc = displayPrice
-      ? '<div style="font-size:10px;color:var(--muted);margin-top:4px;">Avg. Zillow listing price</div>'
-      : '<div style="font-size:10px;color:var(--muted);margin-top:4px;">No price data available</div>';
     return `
       <div class="rec-card">
         <div class="rec-rank">${label}</div>
         <div class="rec-main">${bedsStr} in ${g.neighborhood}</div>
-        <div class="rec-sub">${g.count} lead${g.count !== 1 ? 's' : ''} yesterday${priceStr}</div>
-        ${priceSrc}
+        <div class="rec-sub">${g.count} lead${g.count !== 1 ? 's' : ''} yesterday</div>
       </div>`;
   }).join('');
 
@@ -611,12 +596,27 @@ function renderRecommendations() {
 }
 
 const BEDS_COLS = [
-  { key: 'studio', label: 'Studio', match: b => b === 0 },
-  { key: '1br',    label: '1BR',    match: b => b === 1 },
-  { key: '2br',    label: '2BR',    match: b => b === 2 },
-  { key: '3br',    label: '3BR+',   match: b => b !== null && b >= 3 },
-  // 'Unknown' beds column intentionally omitted — not actionable for ad targeting
+  { key: 'studio',  label: 'Studio',  match: b => b === 0 },
+  { key: '1br',     label: '1BR',     match: b => b === 1 },
+  { key: '2br',     label: '2BR',     match: b => b === 2 },
+  { key: '3br',     label: '3BR+',    match: b => b !== null && b !== undefined && b >= 3 },
+  { key: 'unknown', label: 'Unknown', match: b => b === null || b === undefined },
 ];
+
+// Always render every bed column, including zero-count ones. Previously columns with no data were
+// filtered out, so a genuine zero was indistinguishable from a column that simply wasn't rendered —
+// which is how the studio capture bug stayed invisible for months.
+function bedCols() { return BEDS_COLS; }
+
+// Verified 2026-08-04 on three units (2 Joy St #10, 104 Queensberry St #4 and #5): Zillow's own API
+// reports bedrooms: 0, but the lead that reaches FUB carries bedrooms: "1". Studios are therefore
+// counted inside the 1BR column on the LEAD side. YGL inventory is unaffected — it labels studios
+// correctly — so the Studio row in the listings table is real.
+const BEDS_CAVEAT = 'Lead bed counts come from Zillow via FUB, which reports studios as 1 bedroom — '
+  + 'verified on three units where Zillow’s own listing says 0. Treat the 1BR column as '
+  + '"1BR + studios" and the lead-side Studio column as not-yet-measurable. YGL inventory below '
+  + 'labels studios correctly, so the two halves are not directly comparable on studios.';
+const BEDS_CAVEAT_DOT = `<span class="info-dot info-dot--muted" tabindex="0" aria-label="${BEDS_CAVEAT}">i<span class="info-tip">${BEDS_CAVEAT}</span></span>`;
 
 function heatClass(count, max) {
   if (!count) return 'heat-0';
@@ -656,12 +656,12 @@ function renderYGLSection() {
   const nbhds = Object.keys(matrix).sort();
   if (!nbhds.length) return '';
 
-  const cols = BEDS_COLS.filter(c => nbhds.some(n => matrix[n]?.[c.key]));
+  const cols = bedCols();
   const headers = cols.map(c => `<th>${c.label}</th>`).join('');
   const rows = nbhds.map(n => {
     const cells = cols.map(c => {
       const cnt = matrix[n]?.[c.key] || 0;
-      return `<td>${cnt ? `<span class="ygl-cell ${yglHeatClass(cnt, maxVal)}">${cnt}</span>` : '<span class="ygl-0">—</span>'}</td>`;
+      return `<td>${cnt ? `<span class="ygl-cell ${yglHeatClass(cnt, maxVal)}">${cnt}</span>` : '<span class="ygl-0">0</span>'}</td>`;
     }).join('');
     const total = cols.reduce((s, c) => s + (matrix[n]?.[c.key] || 0), 0);
     return `<tr><td>${n} <span style="color:var(--muted);font-weight:400;">(${total})</span></td>${cells}</tr>`;
@@ -670,9 +670,13 @@ function renderYGLSection() {
   const noFeeCount = allYGL.filter(l => l.fee === false || l.fee === 'No').length;
   const bostanOnly = allYGL.filter(l => l.neighborhood).length;
 
+  const historyNote = 'YGL returns only what is on-market right now — it has no historical record to '
+    + 'query, so this table cannot follow the date filter above. Every figure here is a snapshot as '
+    + 'of the last sync. Leads are date-filtered; inventory is always "today".';
+
   return `<div class="ygl-section">
-    <div class="ygl-title"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg> Available Inventory (YGL)</div>
-    <div class="ygl-sub">${allYGL.length} on-market listings · ${bostanOnly} in Boston metro · ${noFeeCount} no-fee · updated at last sync</div>
+    <div class="ygl-title"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg> Available Inventory (YGL)<span class="info-dot" tabindex="0" aria-label="${historyNote}">i<span class="info-tip">${historyNote}</span></span></div>
+    <div class="ygl-sub">${allYGL.length} on-market listings · ${bostanOnly} in Boston metro · ${noFeeCount} no-fee · snapshot at last sync, not date-filtered</div>
     <table class="ygl-table">
       <thead><tr><th>Neighborhood</th>${headers}</tr></thead>
       <tbody>${rows}</tbody>
@@ -698,13 +702,13 @@ function renderHeatTable(leads) {
     });
   });
 
-  const cols = BEDS_COLS.filter(c => nbhds.some(n => matrix[n]?.[c.key]));
+  const cols = bedCols();
 
   const headers = cols.map(c => `<th>${c.label}</th>`).join('');
   const rows = nbhds.map(n => {
     const cells = cols.map(c => {
       const cnt = matrix[n]?.[c.key] || 0;
-      return `<td>${cnt ? `<span class="heat-cell ${heatClass(cnt, maxVal)}">${cnt}</span>` : '<span class="heat-0">—</span>'}</td>`;
+      return `<td>${cnt ? `<span class="heat-cell ${heatClass(cnt, maxVal)}">${cnt}</span>` : '<span class="heat-0">0</span>'}</td>`;
     }).join('');
     const total = cols.reduce((s, c) => s + (matrix[n]?.[c.key] || 0), 0);
     return `<tr><td>${n} <span style="color:var(--muted);font-weight:400;">(${total})</span></td>${cells}</tr>`;
@@ -716,77 +720,32 @@ function renderHeatTable(leads) {
   </table>`;
 }
 
-function renderPriceTable() {
-  // Build neighborhood × beds average price grid from ALL leads (not date-filtered)
-  // Dedupe by unique address so each listing is counted once
-  const addrMap = {}; // address → { neighborhood, beds, price }
-  allLeads.forEach(l => {
-    if (!l.address || !l.neighborhood) return;
-    const zp = zillowPrices[l.address];
-    if (!zp || !zp.price) return;
-    if (!addrMap[l.address]) {
-      addrMap[l.address] = { neighborhood: l.neighborhood, beds: l.beds, price: zp.price };
-    }
-  });
-
-  // Group by neighborhood × beds
-  const matrix = {}; // neighborhood → bedsKey → [prices]
-  Object.values(addrMap).forEach(({ neighborhood, beds, price }) => {
-    if (!matrix[neighborhood]) matrix[neighborhood] = {};
-    BEDS_COLS.forEach(col => {
-      if (col.match(beds)) {
-        if (!matrix[neighborhood][col.key]) matrix[neighborhood][col.key] = [];
-        matrix[neighborhood][col.key].push(price);
-      }
-    });
-  });
-
-  const nbhds = Object.keys(matrix).sort();
-  if (!nbhds.length) return '<div class="empty" style="padding:24px;">No Zillow price data available yet.</div>';
-
-  const cols = BEDS_COLS.filter(c => nbhds.some(n => matrix[n]?.[c.key]?.length));
-  const headers = cols.map(c => `<th>${c.label}</th>`).join('');
-  const rows = nbhds.map(n => {
-    const cells = cols.map(c => {
-      const prices = matrix[n]?.[c.key] || [];
-      if (!prices.length) return '<td><span class="price-na">—</span></td>';
-      const avg = Math.round(prices.reduce((s, p) => s + p, 0) / prices.length);
-      return `<td><span class="price-cell">$${avg.toLocaleString()}</span><div style="font-size:10px;color:var(--muted);">${prices.length} listing${prices.length !== 1 ? 's' : ''}</div></td>`;
-    }).join('');
-    const allPrices = cols.flatMap(c => matrix[n]?.[c.key] || []);
-    const totalAvg = allPrices.length ? Math.round(allPrices.reduce((s, p) => s + p, 0) / allPrices.length) : null;
-    const avgStr = totalAvg ? `$${totalAvg.toLocaleString()}` : '—';
-    return `<tr><td>${n} <span style="color:var(--muted);font-weight:400;">(${allPrices.length})</span></td>${cells}</tr>`;
-  }).join('');
-
-  const totalAddrs = Object.keys(addrMap).length;
-  return `<div class="price-section">
-    <div class="section-header" style="border-bottom-color:var(--green-border);">
-      <span class="section-title" style="color:var(--green);">Avg. Rent Price by Neighborhood & Beds</span>
-      <span class="section-sub">${totalAddrs} unique Zillow listings priced</span>
-    </div>
-    <table class="price-table">
-      <thead><tr><th>Neighborhood</th>${headers}</tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-  </div>`;
-}
-
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const UNKNOWN_MONTH = 'Unknown';
 const MONTH_CLASSES = { Jan:'month-other', Feb:'month-other', Mar:'month-other', Apr:'month-other',
   May:'month-other', Jun:'month-jun', Jul:'month-jul', Aug:'month-aug', Sep:'month-sep',
-  Oct:'month-other', Nov:'month-other', Dec:'month-other' };
+  Oct:'month-other', Nov:'month-other', Dec:'month-other', Unknown:'month-unknown' };
+
+// Unknown always sorts last; MONTH_NAMES.indexOf would return -1 and float it to the front.
+function monthOrder(m) { return m === UNKNOWN_MONTH ? 99 : MONTH_NAMES.indexOf(m); }
+
+// A lead with no move-in date is bucketed as Unknown rather than dropped, so the month counts
+// in a cell add up to that cell's total lead count.
+function moveInMonth(lead) {
+  if (!lead.move_in) return UNKNOWN_MONTH;
+  const d = new Date(lead.move_in + 'T12:00:00Z');
+  if (isNaN(d.getTime())) return UNKNOWN_MONTH;
+  return MONTH_NAMES[d.getUTCMonth()];
+}
 
 function renderMoveInTable(leads) {
   // Group by neighborhood × beds → move-in month counts
   const matrix = {}; // neighborhood → bedsKey → { month → count }
   let total = 0;
   leads.forEach(l => {
-    if (!l.move_in || !l.neighborhood || l.beds === null || l.beds === undefined) return;
-    const d = new Date(l.move_in + 'T12:00:00Z');
-    if (isNaN(d.getTime())) return;
-    const monthKey = MONTH_NAMES[d.getUTCMonth()];
-    total++;
+    if (!l.neighborhood) return;
+    const monthKey = moveInMonth(l);
+    if (monthKey !== UNKNOWN_MONTH) total++;
     if (!matrix[l.neighborhood]) matrix[l.neighborhood] = {};
     BEDS_COLS.forEach(col => {
       if (col.match(l.beds)) {
@@ -799,14 +758,14 @@ function renderMoveInTable(leads) {
   const nbhds = Object.keys(matrix).sort();
   if (!nbhds.length) return '';
 
-  const cols = BEDS_COLS.filter(c => nbhds.some(n => matrix[n]?.[c.key] && Object.keys(matrix[n][c.key]).length));
+  const cols = bedCols();
   const headers = cols.map(c => `<th>${c.label}</th>`).join('');
 
   const rows = nbhds.map(n => {
     const cells = cols.map(c => {
       const months = matrix[n]?.[c.key] || {};
-      const sorted = Object.entries(months).sort((a, b) => MONTH_NAMES.indexOf(a[0]) - MONTH_NAMES.indexOf(b[0]));
-      if (!sorted.length) return '<td><span class="movein-empty">—</span></td>';
+      const sorted = Object.entries(months).sort((a, b) => monthOrder(a[0]) - monthOrder(b[0]));
+      if (!sorted.length) return '<td><span class="movein-empty">0</span></td>';
       const tags = sorted.map(([m, cnt]) => `<span class="month-tag ${MONTH_CLASSES[m] || 'month-other'}">${m} ×${cnt}</span>`).join(' ');
       return `<td>${tags}</td>`;
     }).join('');
@@ -815,6 +774,7 @@ function renderMoveInTable(leads) {
 
   const withMoveIn = leads.filter(l => l.move_in).length;
   const pct = leads.length ? Math.round(withMoveIn / leads.length * 100) : 0;
+  const unknownMoveIn = leads.filter(l => l.neighborhood && !l.move_in).length;
 
   // Leads with move-in but no neighborhood — grouped by move-in month
   const unassigned = leads.filter(l => l.move_in && !l.neighborhood);
@@ -828,7 +788,7 @@ function renderMoveInTable(leads) {
       if (!byMonth[key]) byMonth[key] = [];
       byMonth[key].push(l);
     });
-    const sortedMonths = Object.keys(byMonth).sort((a, b) => MONTH_NAMES.indexOf(a) - MONTH_NAMES.indexOf(b));
+    const sortedMonths = Object.keys(byMonth).sort((a, b) => monthOrder(a) - monthOrder(b));
     const groups = sortedMonths.map(m => {
       const cls = MONTH_CLASSES[m] || 'month-other';
       const leadRows = byMonth[m].map(l => {
@@ -860,13 +820,13 @@ function renderMoveInTable(leads) {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         <span class="section-title" style="color:#7c3aed;">Move-In Demand by Neighborhood & Beds</span>
       </div>
-      <span class="section-sub">${total} leads with move-in date (${pct}% of filtered)</span>
+      <span class="section-sub">${total} leads with move-in date (${pct}% of filtered) · ${unknownMoveIn} unknown</span>
     </div>
     <table class="movein-table">
       <thead><tr><th>Neighborhood</th>${headers}</tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <div class="movein-note">Requested move-in months from Zillow lead inquiries. Colored by month.</div>
+    <div class="movein-note">Requested move-in months from Zillow lead inquiries. Colored by month. Leads whose inquiry carried no move-in date are counted as <strong>Unknown</strong> rather than dropped, so each cell adds up to its full lead count.</div>
     ${unassignedHtml}
   </div>`;
 }
@@ -986,7 +946,6 @@ function render() {
   // Dashboard view
   const statsHtml  = renderStats(leads);
   const recsHtml   = renderRecommendations();
-  const priceHtml  = renderPriceTable();
   const moveinHtml = renderMoveInTable(leads);
   const heatHtml   = renderHeatTable(leads);
   const agentHtml  = renderAgentBreakdown(leads);
@@ -1034,7 +993,7 @@ function render() {
     <div class="two-col">
       <div class="heat-section">
         <div class="section-header">
-          <span class="section-title">Lead Volume by Neighborhood & Beds</span>
+          <span class="section-title">Lead Volume by Neighborhood &amp; Beds${BEDS_CAVEAT_DOT}</span>
           <span class="section-sub">${locLeadCount} of ${leads.length} leads have location</span>
         </div>
         ${heatHtml}
@@ -1046,7 +1005,6 @@ function render() {
         ${agentHtml}
       </div>
     </div>
-    ${priceHtml}
     ${moveinHtml}
     <div class="cards-section">
       <div class="section-header">
@@ -1066,9 +1024,69 @@ function setDate(val) {
   currentDate = val;
   currentPage = 1;
   cardAgent = ''; cardNbhd = ''; cardBeds = '';
+  customStart = ''; customEnd = '';
+  document.getElementById('dateStart').value = '';
+  document.getElementById('dateEnd').value = '';
+  syncDateRangeUI();
   document.querySelectorAll('#dateButtons button').forEach(b => b.classList.remove('active'));
   event.target.classList.add('active');
   render();
+}
+
+// Custom start–end range. Either bound may be left empty: start-only means "since", end-only means
+// "up to". Picking a range deselects the presets; clearing it falls back to Yesterday.
+function setCustomRange() {
+  const start = document.getElementById('dateStart').value;
+  const end   = document.getElementById('dateEnd').value;
+
+  if (start && end && start > end) {
+    // Swap rather than silently returning nothing.
+    document.getElementById('dateStart').value = end;
+    document.getElementById('dateEnd').value = start;
+    customStart = end; customEnd = start;
+  } else {
+    customStart = start; customEnd = end;
+  }
+
+  if (!customStart && !customEnd) { clearCustomRange(); return; }
+
+  currentDate = 'custom';
+  currentPage = 1;
+  cardAgent = ''; cardNbhd = ''; cardBeds = '';
+  document.querySelectorAll('#dateButtons button').forEach(b => b.classList.remove('active'));
+  syncDateRangeUI();
+  render();
+}
+
+function clearCustomRange() {
+  customStart = ''; customEnd = '';
+  document.getElementById('dateStart').value = '';
+  document.getElementById('dateEnd').value = '';
+  currentDate = 'yesterday';
+  currentPage = 1;
+  document.querySelectorAll('#dateButtons button').forEach((b, i) => b.classList.toggle('active', i === 0));
+  syncDateRangeUI();
+  render();
+}
+
+function syncDateRangeUI() {
+  const on = currentDate === 'custom';
+  document.getElementById('dateStart').classList.toggle('active-range', on);
+  document.getElementById('dateEnd').classList.toggle('active-range', on);
+  document.getElementById('dateRangeClear').style.display = on ? '' : 'none';
+}
+
+// Human-readable label for the active date filter, used in the stat card sub-line.
+function dateRangeLabel() {
+  if (currentDate === 'yesterday') return 'yesterday';
+  if (currentDate === '7d') return 'last 7 days';
+  if (currentDate === '30d') return 'last 30 days';
+  if (currentDate === 'custom') {
+    if (customStart && customEnd) return `${fmtDate(customStart)} – ${fmtDate(customEnd)}`;
+    if (customStart) return `since ${fmtDate(customStart)}`;
+    if (customEnd) return `through ${fmtDate(customEnd)}`;
+  }
+  return 'all time';
 }
 
 function setBeds(val) {
@@ -1107,7 +1125,6 @@ async function init() {
 
     allLeads     = data.leads || [];
     allYGL       = data.yglListings || [];
-    zillowPrices = data.zillowPrices || {};
 
     // Sync time
     if (data.generated) {
