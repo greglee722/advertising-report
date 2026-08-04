@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lead &amp; Listing Report v1.4</title>
+<title>Lead &amp; Listing Report v1.5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -39,6 +39,25 @@
   .header h1 { font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -.2px; }
   .version { background: rgba(255,255,255,.12); padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: .3px; }
   .sync-time { font-size: 12px; color: rgba(255,255,255,.5); }
+
+  /* Header alert — only rendered when something actually needs doing */
+  .alert-badge { position: relative; display: flex; align-items: center; gap: 7px; background: rgba(242,188,68,.16); border: 1px solid rgba(242,188,68,.5); color: #f2bc44; border-radius: 20px; padding: 5px 12px 5px 10px; cursor: pointer; font-family: var(--font-body); font-weight: 700; font-size: 12px; transition: all var(--transition); }
+  .alert-badge:hover { background: rgba(242,188,68,.28); border-color: #f2bc44; }
+  .alert-badge svg { width: 15px; height: 15px; }
+  .alert-count { letter-spacing: .2px; }
+
+  /* Listings-needing-data page */
+  .needs-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .needs-note { padding: 14px 22px; font-size: 12px; color: var(--muted); line-height: 1.6; border-bottom: 1px solid var(--border); background: #fffdf5; }
+  .needs-agent { border-bottom: 1px solid var(--border); }
+  .needs-agent:last-child { border-bottom: none; }
+  .needs-agent-head { padding: 12px 22px 8px; font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--text); }
+  .needs-table { width: 100%; border-collapse: collapse; }
+  .needs-table th { padding: 7px 12px; font-size: 10px; font-weight: 700; color: var(--muted); text-align: left; background: var(--bg); border-bottom: 1px solid var(--border); letter-spacing: .5px; text-transform: uppercase; }
+  .needs-table td { padding: 8px 12px; font-size: 12px; border-bottom: 1px solid #f2f6fb; }
+  .needs-table tr:last-child td { border-bottom: none; }
+  .needs-table tr:hover td { background: var(--primary-light); }
+  .needs-tag { background: #fef3c7; color: #92400e; border-radius: 10px; padding: 2px 8px; font-size: 10px; font-weight: 700; white-space: nowrap; }
 
   /* Filters */
   .filters { background: var(--card); border-bottom: 1px solid var(--border); padding: 10px 28px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
@@ -274,9 +293,10 @@
 <div class="header">
   <div class="header-left">
     <h1>Lead &amp; Listing Report</h1>
-    <span class="version">v1.4</span>
+    <span class="version">v1.5</span>
   </div>
   <div style="display:flex;align-items:center;gap:16px;">
+    <span id="alertSlot"></span>
     <span class="sync-time" id="syncTime">Loading...</span>
     <span id="userEmail" style="font-size:12px;color:rgba(255,255,255,.5);"></span>
     <button onclick="signOut()" class="btn-signout">Sign Out</button>
@@ -384,6 +404,14 @@ async function checkAuth() {
 const PAGE_SIZE = 25;
 let allLeads     = [];
 let allYGL       = [];
+// address → { price, beds, ... } captured from the agents' own Zillow accounts. Empty until the
+// manual fill is loaded, at which point this page stops being a worklist and becomes an alert.
+let agentListings = {};
+let currentView   = 'dashboard';   // 'dashboard' | 'needs'
+
+// A listing older than this can't realistically be looked up any more — the ad is gone from Zillow,
+// so flagging it would be busywork. 30 days keeps the list to what's still actionable.
+const NEEDS_DATA_DAYS = 30;
 let currentDate = 'yesterday';
 let customStart = '';
 let customEnd   = '';
@@ -988,9 +1016,127 @@ function renderNoAddressSection(leads, zillowLeads) {
   </details>`;
 }
 
+// ── Listings still needing a price / bed count ────────────────────────────────
+
+// Unique addresses that produced a lead recently but have no captured price or beds, ranked by
+// lead volume so the highest-value lookups come first. One row per agent × address, matching how
+// the fill is actually done — signed into one account at a time.
+function addressesNeedingData() {
+  const cutoff = daysAgo(NEEDS_DATA_DAYS);
+  const groups = new Map();
+  allLeads.forEach(l => {
+    if (!l.address || !l.agent || l.date < cutoff) return;
+    const have = agentListings[l.address];
+    if (have && have.price != null && have.beds != null) return;
+    const key = l.agent + '||' + l.address;
+    let g = groups.get(key);
+    if (!g) {
+      g = { agent: l.agent, address: l.address, count: 0, first: l.date, last: l.date,
+            beds: l.beds, names: new Set(),
+            missing: !have ? 'price + beds' : (have.price == null ? 'price' : 'beds') };
+      groups.set(key, g);
+    }
+    g.count++;
+    if (l.lead_name) g.names.add(l.lead_name);
+    if (l.date < g.first) g.first = l.date;
+    if (l.date > g.last) g.last = l.date;
+    if (g.beds == null && l.beds != null) g.beds = l.beds;
+  });
+  return [...groups.values()].sort((a, b) =>
+    b.count - a.count || a.agent.localeCompare(b.agent) || a.address.localeCompare(b.address));
+}
+
+function renderNeedsBadge() {
+  const n = addressesNeedingData().length;
+  if (!n) return '';
+  return `<button class="alert-badge" onclick="setView('needs')" title="${n} listing${n !== 1 ? 's' : ''} with recent leads but no price or bed count captured">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <span class="alert-count">${n > 99 ? '99+' : n}</span>
+  </button>`;
+}
+
+function renderNeedsPage() {
+  const rows = addressesNeedingData();
+  const root = document.getElementById('root');
+
+  if (!rows.length) {
+    root.innerHTML = `<div class="needs-section">
+      <div class="section-header"><span class="section-title">Listings Needing Data</span>
+        <button class="link-btn" onclick="setView('dashboard')">← Back to report</button></div>
+      <div class="empty" style="padding:32px;">Nothing outstanding — every address with a lead in the last ${NEEDS_DATA_DAYS} days has a price and bed count.</div>
+    </div>`;
+    return;
+  }
+
+  const byAgent = {};
+  rows.forEach(r => (byAgent[r.agent] = byAgent[r.agent] || []).push(r));
+  const totalLeads = rows.reduce((s, r) => s + r.count, 0);
+
+  const blocks = Object.keys(byAgent).sort().map(agent => {
+    const list = byAgent[agent];
+    const agentLeads = list.reduce((s, r) => s + r.count, 0);
+    let running = 0;
+    const trs = list.map((r, i) => {
+      running += r.count;
+      return `<tr>
+        <td style="color:var(--muted);">${i + 1}</td>
+        <td style="font-weight:600;">${r.address}</td>
+        <td style="text-align:center;font-weight:700;">${r.count}</td>
+        <td style="text-align:center;color:var(--muted);">${Math.round(running / agentLeads * 100)}%</td>
+        <td style="text-align:center;">${r.beds !== null && r.beds !== undefined ? bedsLabel(r.beds) : '<span style="color:#c00;">unknown</span>'}</td>
+        <td style="text-align:center;"><span class="needs-tag">${r.missing}</span></td>
+        <td style="color:var(--muted);font-size:11px;">${fmtDate(r.first)} – ${fmtDate(r.last)}</td>
+      </tr>`;
+    }).join('');
+    return `<div class="needs-agent">
+      <div class="needs-agent-head">${agent} <span style="color:var(--muted);font-weight:400;">— ${list.length} address${list.length !== 1 ? 'es' : ''}, ${agentLeads} leads</span></div>
+      <table class="needs-table">
+        <thead><tr><th>#</th><th>Address</th><th>Leads</th><th>Running</th><th>FUB beds</th><th>Missing</th><th>Lead dates</th></tr></thead>
+        <tbody>${trs}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+
+  root.innerHTML = `<div class="needs-section">
+    <div class="section-header">
+      <span class="section-title">Listings Needing Data</span>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button class="link-btn" onclick="downloadNeedsCsv()">Download CSV</button>
+        <button class="link-btn" onclick="setView('dashboard')">← Back to report</button>
+      </div>
+    </div>
+    <div class="needs-note">
+      ${rows.length} address${rows.length !== 1 ? 'es' : ''} produced ${totalLeads} lead${totalLeads !== 1 ? 's' : ''} in the last ${NEEDS_DATA_DAYS} days with no price or bed count captured.
+      Ranked by lead volume within each agent, with a running share — work top-down and stop wherever you like.
+      <strong>The bed count matters as much as the price:</strong> it's what the lead-side bed columns are wrong about today.
+    </div>
+    ${blocks}
+  </div>`;
+}
+
+// Client-side export so the worklist can leave the page without regenerating anything.
+function downloadNeedsCsv() {
+  const rows = addressesNeedingData();
+  const esc = v => { const s = String(v == null ? '' : v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const head = ['Agent', 'Address', 'Leads', 'First lead', 'Last lead', 'Lead names', 'FUB beds (may be wrong)', 'Missing', 'PRICE — fill in', 'BEDS — fill in', 'Notes'];
+  const body = rows.map(r => [r.agent, r.address, r.count, r.first, r.last, [...r.names].join('; '),
+    r.beds !== null && r.beds !== undefined ? bedsLabel(r.beds) : '', r.missing, '', '', ''].map(esc).join(','));
+  const blob = new Blob([[head.map(esc).join(','), ...body].join('\n') + '\n'], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `listings-needing-data-${localDateStr(new Date())}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 // ── Main render ───────────────────────────────────────────────────────────────
 
 function render() {
+  const badge = document.getElementById('alertSlot');
+  if (badge) badge.innerHTML = renderNeedsBadge();
+
+  if (currentView === 'needs') { renderNeedsPage(); return; }
+
   const leads = getFilteredLeads();
   const root  = document.getElementById('root');
 
@@ -1139,6 +1285,13 @@ function dateRangeLabel() {
 }
 
 // '' = all, 'unknown' = leads with no bed count captured, otherwise an integer ('3' means 3BR+)
+function setView(val) {
+  currentView = val;
+  currentPage = 1;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function setBeds(val) {
   currentBeds = val === '' ? null : (val === 'unknown' ? 'unknown' : parseInt(val, 10));
   currentPage = 1;
@@ -1165,6 +1318,7 @@ async function init() {
 
     allLeads     = data.leads || [];
     allYGL       = data.yglListings || [];
+    agentListings = data.agentListings || {};
 
     // Sync time
     if (data.generated) {

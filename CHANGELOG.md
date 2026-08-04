@@ -1,5 +1,26 @@
 # Changelog
 
+## index.html v1.5 — 2026-08-04
+
+### Added
+- **"Listings Needing Data" page + header alert.** A gold bell badge appears in the header with a
+  count whenever an address has produced a lead recently but has no captured price or bed count;
+  clicking it opens a dedicated page, so the main report stays uncluttered. The badge is not
+  rendered at all when nothing is outstanding — no permanent decoration to tune out.
+- Rows are grouped by agent (matching how the fill is done — signed into one account at a time),
+  ranked by lead volume with a running share, so the work can stop at any point with a known
+  coverage figure. Shows what's missing per row (price, beds, or both) and flags an unknown FUB
+  bed count in red.
+- **Download CSV** on that page, generated client-side, so the worklist can leave the report
+  without regenerating anything.
+- Scoped to the last 30 days: an older ad is gone from Zillow and can't be looked up, so listing it
+  would be busywork.
+
+### Notes
+- Reads an optional `agentListings` map (address → price/beds) from `data.json`. That map is empty
+  until the manual fill is loaded, so today the page is a complete worklist (323 addresses, 625
+  leads); once loaded it becomes a true alert showing only new arrivals.
+
 ## index.html v1.3 · sync.js v0.7.1 — 2026-08-04
 
 ### Added
