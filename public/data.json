@@ -1,6 +1,6 @@
 {
-  "generated": "2026-08-05T14:52:06.046Z",
-  "version": "0.8.1",
+  "generated": "2026-08-05T16:50:09.801Z",
+  "version": "0.8.2",
   "agents": [
     "Alejandro Cruz",
     "Christian Ferreira",
@@ -131,7 +131,7 @@
       "zillow_url": null,
       "lead_name": "CharmicLynne",
       "source": "<unspecified>",
-      "stage": "Lead",
+      "stage": "Revival",
       "move_in": null
     },
     {
@@ -147,7 +147,7 @@
       "zillow_url": null,
       "lead_name": "Sean Carlisle",
       "source": "Zillow Rentals",
-      "stage": "Questions Answered",
+      "stage": "Options Picked/Complete Showing",
       "move_in": "2026-09-01"
     },
     {
@@ -179,7 +179,7 @@
       "zillow_url": null,
       "lead_name": "Sneha Jhabak",
       "source": "Zillow Rentals",
-      "stage": "Lead",
+      "stage": "Time Confirmed",
       "move_in": "2026-08-30"
     },
     {
@@ -195,7 +195,7 @@
       "zillow_url": null,
       "lead_name": "Will Gately",
       "source": "Zillow Rentals",
-      "stage": "Lead",
+      "stage": "Non-workable",
       "move_in": "2026-09-01"
     },
     {
@@ -283,7 +283,7 @@
       "fub_id": "16692",
       "agent": "Yuli Burstein",
       "date": "2026-08-04",
-      "address": "98 Myrtle St #6, Boston, MA, 02114",
+      "address": "108 Myrtle St #12, Boston, MA, 02114",
       "zip": "02114",
       "neighborhood": "Beacon Hill",
       "beds": 2,
@@ -291,7 +291,7 @@
       "zillow_url": null,
       "lead_name": "Andrew Brunner",
       "source": "Zillow Rentals",
-      "stage": "Lead",
+      "stage": "Non-workable",
       "move_in": "2026-09-01"
     },
     {
@@ -43113,296 +43113,58 @@
   ],
   "yglListings": [
     {
-      "id": "444249573",
-      "address": "15 Park Dr.",
-      "unit": "7",
-      "city": "Boston",
-      "zip": "02215",
-      "neighborhood": "West Fenway",
-      "ygl_neighborhood": "Fenway",
-      "non_unit": null,
-      "beds": 0,
-      "price": 2300,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "439519915",
-      "address": "17 Sheafe St.",
-      "unit": "1",
-      "city": "Boston",
-      "zip": "02113",
-      "neighborhood": "North End",
-      "ygl_neighborhood": "North End",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2695,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "48166059",
-      "address": "91 Prince St.",
-      "unit": "4",
-      "city": "Boston",
-      "zip": "02113",
-      "neighborhood": "North End",
-      "ygl_neighborhood": "North End",
-      "non_unit": null,
-      "beds": 2,
-      "price": 3495,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "48166071",
-      "address": "91 Prince St.",
-      "unit": "6",
-      "city": "Boston",
-      "zip": "02113",
-      "neighborhood": "North End",
-      "ygl_neighborhood": "North End",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2650,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "48166079",
-      "address": "91 Prince St.",
-      "unit": "8",
-      "city": "Boston",
-      "zip": "02113",
-      "neighborhood": "North End",
-      "ygl_neighborhood": "North End",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2650,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "48166061",
-      "address": "91 Prince St.",
-      "unit": "7",
-      "city": "Boston",
-      "zip": "02113",
-      "neighborhood": "North End",
-      "ygl_neighborhood": "North End",
-      "non_unit": null,
-      "beds": 2,
-      "price": 3695,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "48166080",
-      "address": "91 Prince St.",
-      "unit": "12",
-      "city": "Boston",
-      "zip": "02113",
-      "neighborhood": "North End",
-      "ygl_neighborhood": "North End",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2650,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "48166069",
-      "address": "91 Prince St.",
-      "unit": "11",
-      "city": "Boston",
-      "zip": "02113",
-      "neighborhood": "North End",
-      "ygl_neighborhood": "North End",
-      "non_unit": null,
-      "beds": 2,
-      "price": 3695,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "48166064",
-      "address": "91 Prince St.",
-      "unit": "16",
-      "city": "Boston",
-      "zip": "02113",
-      "neighborhood": "North End",
-      "ygl_neighborhood": "North End",
-      "non_unit": null,
-      "beds": 2,
-      "price": 3695,
-      "available_date": "08/01/2026",
-      "fee": true
-    },
-    {
-      "id": "268011508",
-      "address": "407 Washington St.",
-      "unit": "503",
-      "city": "Boston",
-      "zip": "02108",
-      "neighborhood": "Theatre District/Midtown/Chinatown/Financial District",
-      "ygl_neighborhood": "Financial District",
-      "non_unit": null,
-      "beds": 1,
-      "price": 3200,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "391966377",
-      "address": "407 Washington St.",
-      "unit": "403",
-      "city": "Boston",
-      "zip": "02108",
-      "neighborhood": "Theatre District/Midtown/Chinatown/Financial District",
-      "ygl_neighborhood": "Financial District",
-      "non_unit": null,
-      "beds": 1,
-      "price": 3200,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "438310756",
-      "address": "18 Sunset St.",
+      "id": "391278258",
+      "address": "912 Beacon St.",
       "unit": "3",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 3,
-      "price": 4650,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "84078016",
-      "address": "174 Saint Alphonsus",
-      "unit": "3",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 4,
-      "price": 5400,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "83846711",
-      "address": "12 Oswald St.",
-      "unit": "2",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 4,
-      "price": 5000,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "83842538",
-      "address": "80 Hillside St.",
-      "unit": "3",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 3,
-      "price": 3800,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "83954477",
-      "address": "148 Hillside St.",
-      "unit": "3",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 5,
-      "price": 6500,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "430666067",
-      "address": "135 Hillside St.",
-      "unit": "1",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 4,
-      "price": 5400,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "148154864",
-      "address": "122 Calumet St.",
-      "unit": "3",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 4,
-      "price": 6000,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "354638287",
-      "address": "52 Charlesgate East",
-      "unit": "173",
-      "city": "Boston",
-      "zip": "02215",
-      "neighborhood": "Fenway/Kenmore",
-      "ygl_neighborhood": "Fenway",
-      "non_unit": null,
-      "beds": 0,
-      "price": 2200,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
-      "id": "83122438",
-      "address": "17 Aberdeen St.",
-      "unit": "2",
       "city": "Boston",
       "zip": "02215",
       "neighborhood": "Fenway/Kenmore",
       "ygl_neighborhood": "Fenway",
       "non_unit": null,
       "beds": 3,
-      "price": 4050,
+      "price": 4800,
       "available_date": "09/01/2026",
       "fee": true
     },
     {
-      "id": "41066722",
-      "address": "1191 Boylston St.",
-      "unit": "60",
+      "id": "39507146",
+      "address": "887 Huntington Ave.",
+      "unit": "G-1",
+      "city": "Boston",
+      "zip": "02115",
+      "neighborhood": "Fenway/Symphony",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 0,
+      "price": 2125,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "39449462",
+      "address": "881 Huntington Ave.",
+      "unit": "7",
+      "city": "Boston",
+      "zip": "02115",
+      "neighborhood": "Fenway/Symphony",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 2,
+      "price": 3120,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "41055109",
+      "address": "1175 Boylston St. (Bsmt.)",
+      "unit": "50",
       "city": "Boston",
       "zip": "02215",
       "neighborhood": "West Fenway",
       "ygl_neighborhood": "Fenway",
       "non_unit": null,
       "beds": 2,
-      "price": 2945,
+      "price": 2895,
       "available_date": "09/01/2026",
       "fee": false
     },
@@ -43421,16 +43183,16 @@
       "fee": false
     },
     {
-      "id": "41055109",
-      "address": "1175 Boylston St. (Bsmt.)",
-      "unit": "50",
+      "id": "41066722",
+      "address": "1191 Boylston St.",
+      "unit": "60",
       "city": "Boston",
       "zip": "02215",
       "neighborhood": "West Fenway",
       "ygl_neighborhood": "Fenway",
       "non_unit": null,
       "beds": 2,
-      "price": 2895,
+      "price": 2945,
       "available_date": "09/01/2026",
       "fee": false
     },
@@ -43659,6 +43421,20 @@
       "fee": false
     },
     {
+      "id": "41084260",
+      "address": "1173 Boylston St.",
+      "unit": "101",
+      "city": "Boston",
+      "zip": "02215",
+      "neighborhood": "West Fenway",
+      "ygl_neighborhood": "Fenway",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2235,
+      "available_date": "09/01/2026",
+      "fee": false
+    },
+    {
       "id": "41051317",
       "address": "1171 Boylston St.",
       "unit": "5",
@@ -43673,18 +43449,284 @@
       "fee": false
     },
     {
-      "id": "41084260",
-      "address": "1173 Boylston St.",
-      "unit": "101",
+      "id": "208595752",
+      "address": "32 Clearway St.",
+      "unit": "5",
+      "city": "Boston",
+      "zip": "02115",
+      "neighborhood": "Fenway/Symphony",
+      "ygl_neighborhood": "Back Bay",
+      "non_unit": null,
+      "beds": 3,
+      "price": 5540,
+      "available_date": "09/02/2026",
+      "fee": false
+    },
+    {
+      "id": "444249573",
+      "address": "15 Park Dr.",
+      "unit": "7",
       "city": "Boston",
       "zip": "02215",
       "neighborhood": "West Fenway",
       "ygl_neighborhood": "Fenway",
       "non_unit": null,
-      "beds": 1,
-      "price": 2235,
+      "beds": 0,
+      "price": 2300,
       "available_date": "09/01/2026",
-      "fee": false
+      "fee": true
+    },
+    {
+      "id": "439519915",
+      "address": "17 Sheafe St.",
+      "unit": "1",
+      "city": "Boston",
+      "zip": "02113",
+      "neighborhood": "North End",
+      "ygl_neighborhood": "North End",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2695,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "48166071",
+      "address": "91 Prince St.",
+      "unit": "6",
+      "city": "Boston",
+      "zip": "02113",
+      "neighborhood": "North End",
+      "ygl_neighborhood": "North End",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2650,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "48166079",
+      "address": "91 Prince St.",
+      "unit": "8",
+      "city": "Boston",
+      "zip": "02113",
+      "neighborhood": "North End",
+      "ygl_neighborhood": "North End",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2650,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "48166061",
+      "address": "91 Prince St.",
+      "unit": "7",
+      "city": "Boston",
+      "zip": "02113",
+      "neighborhood": "North End",
+      "ygl_neighborhood": "North End",
+      "non_unit": null,
+      "beds": 2,
+      "price": 3695,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "48166080",
+      "address": "91 Prince St.",
+      "unit": "12",
+      "city": "Boston",
+      "zip": "02113",
+      "neighborhood": "North End",
+      "ygl_neighborhood": "North End",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2650,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "48166069",
+      "address": "91 Prince St.",
+      "unit": "11",
+      "city": "Boston",
+      "zip": "02113",
+      "neighborhood": "North End",
+      "ygl_neighborhood": "North End",
+      "non_unit": null,
+      "beds": 2,
+      "price": 3695,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "48166064",
+      "address": "91 Prince St.",
+      "unit": "16",
+      "city": "Boston",
+      "zip": "02113",
+      "neighborhood": "North End",
+      "ygl_neighborhood": "North End",
+      "non_unit": null,
+      "beds": 2,
+      "price": 3695,
+      "available_date": "08/01/2026",
+      "fee": true
+    },
+    {
+      "id": "391966377",
+      "address": "407 Washington St.",
+      "unit": "403",
+      "city": "Boston",
+      "zip": "02108",
+      "neighborhood": "Theatre District/Midtown/Chinatown/Financial District",
+      "ygl_neighborhood": "Financial District",
+      "non_unit": null,
+      "beds": 1,
+      "price": 3200,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "268011508",
+      "address": "407 Washington St.",
+      "unit": "503",
+      "city": "Boston",
+      "zip": "02108",
+      "neighborhood": "Theatre District/Midtown/Chinatown/Financial District",
+      "ygl_neighborhood": "Financial District",
+      "non_unit": null,
+      "beds": 1,
+      "price": 3200,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "438310756",
+      "address": "18 Sunset St.",
+      "unit": "3",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 3,
+      "price": 4650,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "84078016",
+      "address": "174 Saint Alphonsus",
+      "unit": "3",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 4,
+      "price": 5400,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "83846711",
+      "address": "12 Oswald St.",
+      "unit": "2",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 4,
+      "price": 5000,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "83842538",
+      "address": "80 Hillside St.",
+      "unit": "3",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 3,
+      "price": 3800,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "83954477",
+      "address": "148 Hillside St.",
+      "unit": "3",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 5,
+      "price": 6500,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "430666067",
+      "address": "135 Hillside St.",
+      "unit": "1",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 4,
+      "price": 5400,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "148154864",
+      "address": "122 Calumet St.",
+      "unit": "3",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 4,
+      "price": 6000,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "354638287",
+      "address": "52 Charlesgate East",
+      "unit": "173",
+      "city": "Boston",
+      "zip": "02215",
+      "neighborhood": "Fenway/Kenmore",
+      "ygl_neighborhood": "Fenway",
+      "non_unit": null,
+      "beds": 0,
+      "price": 2200,
+      "available_date": "09/01/2026",
+      "fee": true
+    },
+    {
+      "id": "83122438",
+      "address": "17 Aberdeen St.",
+      "unit": "2",
+      "city": "Boston",
+      "zip": "02215",
+      "neighborhood": "Fenway/Kenmore",
+      "ygl_neighborhood": "Fenway",
+      "non_unit": null,
+      "beds": 3,
+      "price": 4050,
+      "available_date": "09/01/2026",
+      "fee": true
     },
     {
       "id": "69219026",
@@ -43757,20 +43799,6 @@
       "fee": true
     },
     {
-      "id": "311922721",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "506",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2865,
-      "available_date": "07/17/2026",
-      "fee": false
-    },
-    {
       "id": "11029346",
       "address": "75 Saint Alphonsus St.",
       "unit": "2010",
@@ -43785,160 +43813,6 @@
       "fee": false
     },
     {
-      "id": "313727436",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "505",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2915,
-      "available_date": "07/29/2026",
-      "fee": false
-    },
-    {
-      "id": "317185460",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "205",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2855,
-      "available_date": "08/20/2026",
-      "fee": false
-    },
-    {
-      "id": "334689647",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "804",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2750,
-      "available_date": "07/24/2026",
-      "fee": false
-    },
-    {
-      "id": "301525750",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "603",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2805,
-      "available_date": "05/22/2026",
-      "fee": false
-    },
-    {
-      "id": "299988963",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "1504",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2780,
-      "available_date": "08/08/2026",
-      "fee": false
-    },
-    {
-      "id": "299864058",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "606",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2865,
-      "available_date": "07/29/2026",
-      "fee": false
-    },
-    {
-      "id": "11818357",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "104",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2680,
-      "available_date": "09/01/2026",
-      "fee": false
-    },
-    {
-      "id": "12378434",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "214",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2730,
-      "available_date": "07/15/2026",
-      "fee": false
-    },
-    {
-      "id": "13045211",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "1205",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2940,
-      "available_date": "07/15/2026",
-      "fee": false
-    },
-    {
-      "id": "18117505",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "1805",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2893,
-      "available_date": "06/24/2026",
-      "fee": false
-    },
-    {
-      "id": "299068167",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "706",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2875,
-      "available_date": "08/01/2026",
-      "fee": false
-    },
-    {
       "id": "281075686",
       "address": "75 Saint Alphonsus St.",
       "unit": "103",
@@ -43950,20 +43824,6 @@
       "beds": 1,
       "price": 2755,
       "available_date": "09/15/2026",
-      "fee": false
-    },
-    {
-      "id": "298602397",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "1908",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 1,
-      "price": 2845,
-      "available_date": "08/20/2026",
       "fee": false
     },
     {
@@ -44006,48 +43866,6 @@
       "beds": 1,
       "price": 2780,
       "available_date": "07/16/2026",
-      "fee": false
-    },
-    {
-      "id": "281075746",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "1510",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 0,
-      "price": 2711,
-      "available_date": "10/07/2026",
-      "fee": false
-    },
-    {
-      "id": "281075806",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "1010",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 0,
-      "price": 2681,
-      "available_date": "08/25/2026",
-      "fee": false
-    },
-    {
-      "id": "286145529",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "1210",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 0,
-      "price": 2640,
-      "available_date": "06/17/2026",
       "fee": false
     },
     {
@@ -44104,6 +43922,244 @@
       "beds": 1,
       "price": 2815,
       "available_date": "06/17/2026",
+      "fee": false
+    },
+    {
+      "id": "298602397",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "1908",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2845,
+      "available_date": "08/20/2026",
+      "fee": false
+    },
+    {
+      "id": "299068167",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "706",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2875,
+      "available_date": "08/01/2026",
+      "fee": false
+    },
+    {
+      "id": "299864058",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "606",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2865,
+      "available_date": "07/29/2026",
+      "fee": false
+    },
+    {
+      "id": "299988963",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "1504",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2780,
+      "available_date": "08/08/2026",
+      "fee": false
+    },
+    {
+      "id": "301525750",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "603",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2805,
+      "available_date": "05/22/2026",
+      "fee": false
+    },
+    {
+      "id": "311922721",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "506",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2865,
+      "available_date": "07/17/2026",
+      "fee": false
+    },
+    {
+      "id": "313727436",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "505",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2915,
+      "available_date": "07/29/2026",
+      "fee": false
+    },
+    {
+      "id": "317185460",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "205",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2855,
+      "available_date": "08/20/2026",
+      "fee": false
+    },
+    {
+      "id": "281075746",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "1510",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 0,
+      "price": 2711,
+      "available_date": "10/07/2026",
+      "fee": false
+    },
+    {
+      "id": "281075806",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "1010",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 0,
+      "price": 2681,
+      "available_date": "08/25/2026",
+      "fee": false
+    },
+    {
+      "id": "286145529",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "1210",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 0,
+      "price": 2640,
+      "available_date": "06/17/2026",
+      "fee": false
+    },
+    {
+      "id": "334689647",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "804",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2750,
+      "available_date": "07/24/2026",
+      "fee": false
+    },
+    {
+      "id": "18117505",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "1805",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2893,
+      "available_date": "06/24/2026",
+      "fee": false
+    },
+    {
+      "id": "13045211",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "1205",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2940,
+      "available_date": "07/15/2026",
+      "fee": false
+    },
+    {
+      "id": "12378434",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "214",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2730,
+      "available_date": "07/15/2026",
+      "fee": false
+    },
+    {
+      "id": "11818357",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "104",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 1,
+      "price": 2680,
+      "available_date": "09/01/2026",
+      "fee": false
+    },
+    {
+      "id": "299864492",
+      "address": "75 Saint Alphonsus St.",
+      "unit": "707",
+      "city": "Boston",
+      "zip": "02120",
+      "neighborhood": "Mission Hill",
+      "ygl_neighborhood": "Mission Hill",
+      "non_unit": null,
+      "beds": 3,
+      "price": 5257,
+      "available_date": "09/08/2026",
       "fee": false
     },
     {
@@ -44317,31 +44373,17 @@
       "fee": false
     },
     {
-      "id": "299864492",
-      "address": "75 Saint Alphonsus St.",
-      "unit": "707",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 3,
-      "price": 5257,
-      "available_date": "09/08/2026",
-      "fee": false
-    },
-    {
-      "id": "136712200",
+      "id": "163485963",
       "address": "101 Canal St.",
-      "unit": "230",
+      "unit": "603",
       "city": "Boston",
       "zip": "02114",
       "neighborhood": "Beacon Hill",
       "ygl_neighborhood": "North End",
       "non_unit": null,
       "beds": 1,
-      "price": 4260,
-      "available_date": "09/12/2026",
+      "price": 4140,
+      "available_date": "09/25/2026",
       "fee": false
     },
     {
@@ -44387,34 +44429,6 @@
       "fee": false
     },
     {
-      "id": "163485963",
-      "address": "101 Canal St.",
-      "unit": "603",
-      "city": "Boston",
-      "zip": "02114",
-      "neighborhood": "Beacon Hill",
-      "ygl_neighborhood": "North End",
-      "non_unit": null,
-      "beds": 1,
-      "price": 4140,
-      "available_date": "09/25/2026",
-      "fee": false
-    },
-    {
-      "id": "149725370",
-      "address": "101 Canal St.",
-      "unit": "501",
-      "city": "Boston",
-      "zip": "02114",
-      "neighborhood": "Beacon Hill",
-      "ygl_neighborhood": "North End",
-      "non_unit": null,
-      "beds": 2,
-      "price": 5270,
-      "available_date": "08/08/2026",
-      "fee": false
-    },
-    {
       "id": "196297143",
       "address": "101 Canal St.",
       "unit": "810",
@@ -44426,6 +44440,20 @@
       "beds": 1,
       "price": 4705,
       "available_date": "09/01/2026",
+      "fee": false
+    },
+    {
+      "id": "166432998",
+      "address": "101 Canal St.",
+      "unit": "601",
+      "city": "Boston",
+      "zip": "02114",
+      "neighborhood": "Beacon Hill",
+      "ygl_neighborhood": "North End",
+      "non_unit": null,
+      "beds": 2,
+      "price": 5275,
+      "available_date": "08/04/2026",
       "fee": false
     },
     {
@@ -44443,17 +44471,17 @@
       "fee": false
     },
     {
-      "id": "166432998",
+      "id": "149725370",
       "address": "101 Canal St.",
-      "unit": "601",
+      "unit": "501",
       "city": "Boston",
       "zip": "02114",
       "neighborhood": "Beacon Hill",
       "ygl_neighborhood": "North End",
       "non_unit": null,
       "beds": 2,
-      "price": 5275,
-      "available_date": "08/04/2026",
+      "price": 5270,
+      "available_date": "08/08/2026",
       "fee": false
     },
     {
@@ -44539,6 +44567,20 @@
       "price": 2300,
       "available_date": "09/01/2026",
       "fee": false
+    },
+    {
+      "id": "200563056",
+      "address": "150 Camden St.",
+      "unit": "206",
+      "city": "Boston",
+      "zip": "02118",
+      "neighborhood": "South End",
+      "ygl_neighborhood": "Roxbury",
+      "non_unit": null,
+      "beds": 1,
+      "price": 3300,
+      "available_date": "07/01/2026",
+      "fee": true
     },
     {
       "id": "40023924",
@@ -51093,20 +51135,6 @@
       "fee": true
     },
     {
-      "id": "43204145",
-      "address": "16 Wait St.",
-      "unit": "1F",
-      "city": "Boston",
-      "zip": "02120",
-      "neighborhood": "Mission Hill",
-      "ygl_neighborhood": "Mission Hill",
-      "non_unit": null,
-      "beds": 0,
-      "price": 2050,
-      "available_date": "09/01/2026",
-      "fee": true
-    },
-    {
       "id": "43242751",
       "address": "12 Wait St.",
       "unit": "2R",
@@ -51833,20 +51861,6 @@
       "price": 5400,
       "available_date": "09/01/2026",
       "fee": false
-    },
-    {
-      "id": "43613289",
-      "address": "1110 Commonwealth Ave.",
-      "unit": "714",
-      "city": "Boston",
-      "zip": "02215",
-      "neighborhood": "Fenway/Kenmore",
-      "ygl_neighborhood": "",
-      "non_unit": null,
-      "beds": 3,
-      "price": 3900,
-      "available_date": "09/01/2026",
-      "fee": true
     },
     {
       "id": "43611299",
@@ -54946,325 +54960,325 @@
       "price": 3700,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "102 Queensberry St #7, Boston, MA, 02215": {
       "price": 2800,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "104 Queensberry St #7, Boston, MA, 02215": {
       "price": 2400,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "108 Jersey St #5, Boston, MA, 02215": {
       "price": 2400,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "108 Myrtle St #3, Boston, MA, 02114": {
       "price": 2450,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "1088 Boylston St #7, Boston, MA, 02215": {
       "price": 2400,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "11 Queensberry St #22, Boston, MA, 02215": {
       "price": 4000,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "1102 Boylston St #1, Boston, MA, 02215": {
       "price": 2850,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "1102 Boylston St #1t, Boston, MA, 02215": {
       "price": 3300,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "1165 Boylston St #9, Boston, MA, 02215": {
       "price": 2300,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "117 W Concord St #7, Boston, MA, 02118": {
       "price": 2650,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "145 Endicott St #11, Boston, MA, 02113": {
       "price": 2700,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "145 Endicott St #17, Boston, MA, 02113": {
       "price": 3800,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "147 Charles St #4, Boston, MA, 02114": {
       "price": 2700,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "149 Park Dr #22, Boston, MA, 02215": {
       "price": 3850,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "151 Park Dr #22, Boston, MA, 02215": {
       "price": 2550,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "16 Clearway St #7, Boston, MA, 02115": {
       "price": 3900,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "1742 Washington St #5, Boston, MA, 02118": {
       "price": 3900,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "175 Hemenway St #11, Boston, MA, 02115": {
       "price": 2800,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "175 Hemenway St #17, Boston, MA, 02115": {
       "price": 2800,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "175 Hemenway St #3, Boston, MA, 02115": {
       "price": 3850,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "2 Joy St #10, Boston, MA, 02108": {
       "price": 2400,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "220 Hanover St #21, Boston, MA, 02113": {
       "price": 2700,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "227 Newbury St #7, Boston, MA, 02116": {
       "price": 3000,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "235 Park Dr #16, Boston, MA, 02215": {
       "price": 2300,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "254 Newbury St #7, Boston, MA, 02116": {
       "price": 2600,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "3 Champney Pl #6, Boston, MA, 02114": {
       "price": 3700,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "32 Queensberry St #1, Boston, MA, 02215": {
       "price": 2300,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "32 Queensberry St #4, Boston, MA, 02215": {
       "price": 2400,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "379 Commonwealth Ave #10, Boston, MA, 02115": {
       "price": 3000,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "379 Commonwealth Ave #3, Boston, MA, 02115": {
       "price": 3000,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "38 Bradford St #3, Boston, MA, 02118": {
       "price": 3850,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "38 Clearway St #9, Boston, MA, 02115": {
       "price": 3750,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "38 Hemenway St #13, Boston, MA, 02115": {
       "price": 2400,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "39 Charles St #3, Boston, MA, 02114": {
       "price": 2700,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "4 Garden Ct #4c, Boston, MA, 02113": {
       "price": 2700,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "465 Park Dr #6, Boston, MA, 02215": {
       "price": 2950,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "465 Park Dr #7, Boston, MA, 02215": {
       "price": 2700,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "476 Columbus Ave #14, Boston, MA, 02118": {
       "price": 3200,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "48 Hereford St #2, Boston, MA, 02115": {
       "price": 2600,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "51 Joy St #7, Boston, MA, 02114": {
       "price": 4600,
       "beds": 3,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "53 Joy St #6, Boston, MA, 02114": {
       "price": 3800,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "58 Queensberry St #7, Boston, MA, 02215": {
       "price": 3500,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "587 Beacon St #6, Boston, MA, 02215": {
       "price": 3600,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "64 Hemenway St #17, Boston, MA, 02115": {
       "price": 2775,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "64 Hemenway St #2, Boston, MA, 02115": {
       "price": 2400,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "64 Hemenway St #5, Boston, MA, 02115": {
       "price": 2800,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "7 Myrtle St #12, Boston, MA, 02114": {
       "price": 3000,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "752 Tremont St #5, Boston, MA, 02118": {
       "price": 5000,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "857 Beacon St #22, Boston, MA, 02215": {
       "price": 3800,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "89 Park Dr #24, Boston, MA, 02215": {
       "price": 2400,
       "beds": 0,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "90 Saint Botolph St #13, Boston, MA, 02116": {
       "price": 3300,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "913 Boylston St #7, Boston, MA, 02115": {
       "price": 3100,
       "beds": 1,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     },
     "98 Myrtle St #2, Boston, MA, 02114": {
       "price": 3600,
       "beds": 2,
       "zpid": null,
-      "capturedAt": "2026-08-05"
+      "capturedAt": "2026-08-04"
     }
   }
 }
