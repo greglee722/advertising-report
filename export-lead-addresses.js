@@ -20,13 +20,24 @@ const argVal = (flag, fallback) => {
   return i !== -1 && args[i + 1] ? args[i + 1] : fallback;
 };
 const DAYS = parseInt(argVal('--days', '90'), 10);
+// One agent at a time matches the monthly workflow — you're signed into a single account.
+const ONLY_AGENT = argVal('--agent', null);
 const OUT = argVal('--out', path.join('/Volumes/Mini Drive/Claude/Output',
-  `lead-addresses-for-price-fill-${new Date().toISOString().slice(0, 10)}.csv`));
+  `lead-addresses-for-price-fill${ONLY_AGENT ? '-' + ONLY_AGENT.toLowerCase().replace(/\s+/g, '-') : ''}-${new Date().toISOString().slice(0, 10)}.csv`));
 
 const data = JSON.parse(fs.readFileSync(path.join(__dirname, 'public', 'data.json'), 'utf8'));
 
 const cutoff = new Date(Date.now() - DAYS * 864e5).toISOString().slice(0, 10);
-const leads = data.leads.filter(l => l.date >= cutoff && l.address && l.agent);
+let leads = data.leads.filter(l => l.date >= cutoff && l.address && l.agent);
+if (ONLY_AGENT) {
+  const needle = ONLY_AGENT.toLowerCase();
+  leads = leads.filter(l => l.agent.toLowerCase().includes(needle));
+  if (!leads.length) {
+    console.error(`No leads for an agent matching "${ONLY_AGENT}". Known agents: ` +
+      [...new Set(data.leads.map(l => l.agent).filter(Boolean))].sort().join(', '));
+    process.exit(1);
+  }
+}
 
 // One row per agent × address — matches the workflow, since you're signed into one account at a time
 const groups = new Map();

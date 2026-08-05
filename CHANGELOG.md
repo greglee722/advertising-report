@@ -1,5 +1,21 @@
 # Changelog
 
+## index.html v1.8 · sync.js v0.8.2 — 2026-08-05
+
+### Changed
+- **West End removed from the inventory table.** It was split out earlier the same day so it would
+  stop inflating Beacon Hill — that was still the right call, because it is how we learned the
+  inventory generates nothing: **81 listings and zero leads in 30 days.** Having seen that, it only
+  added a dead row to the demand-vs-supply read, so it is now excluded. The exclusion is logged with
+  its count like every other, never silent.
+- **Theatre District/Midtown/Chinatown/Financial District moved directly below Back Bay** in the
+  fixed row order, grouping the downtown-adjacent rows together.
+
+### Notes
+- The verification harness now reads `NEIGHBORHOOD_ORDER` from `index.html` instead of duplicating
+  it, so reordering the report can no longer leave the test asserting a stale layout — which is
+  exactly what happened on this change.
+
 ## index.html v1.7 · sync.js v0.8.1 — 2026-08-05
 
 ### Fixed

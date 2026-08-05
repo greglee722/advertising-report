@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lead &amp; Listing Report v1.7</title>
+<title>Lead &amp; Listing Report v1.8</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -295,7 +295,7 @@
 <div class="header">
   <div class="header-left">
     <h1>Lead &amp; Listing Report</h1>
-    <span class="version">v1.7</span>
+    <span class="version">v1.8</span>
   </div>
   <div style="display:flex;align-items:center;gap:16px;">
     <span id="alertSlot"></span>
@@ -430,15 +430,18 @@ let cardBeds = '';
 // Anything not listed here sorts after, alphabetically — never dropped.
 const NEIGHBORHOOD_ORDER = [
   'Beacon Hill',
+  // West End is currently excluded from the inventory feed (81 listings, zero leads) and never
+  // appears on the lead side, so this entry renders nothing today. Kept so the ordering is already
+  // correct if it is ever brought back.
   'West End',
   'Back Bay',
+  'Theatre District/Midtown/Chinatown/Financial District',
   'Fenway/Symphony',
   'Fenway/Kenmore',
   'West Fenway',
   'Mission Hill',
   'North End',
   'South End',
-  'Theatre District/Midtown/Chinatown/Financial District',
 ];
 
 function sortNeighborhoods(names) {

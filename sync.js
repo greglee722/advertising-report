@@ -4,7 +4,7 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.8.1';
+const VERSION = '0.8.2';
 const DATA_FILE = path.join(__dirname, 'public', 'data.json');
 
 // Boston metro ZIP → neighborhood (matches active-ads-combine)
@@ -112,6 +112,11 @@ const YGL_EXCLUDE = new Set([
   'brighton', 'allston', 'dorchester', 'longwood', 'seaport district', 'south boston',
   'charlestown', 'east boston', 'jamaica plain', 'roslindale', 'west roxbury', 'hyde park',
   'mattapan', 'downtown',
+  // West End was given its own row earlier today so it would stop inflating Beacon Hill. Having
+  // seen it, Greg dropped it 2026-08-05: 81 listings and ZERO leads in 30 days, so it only added
+  // a dead row to the demand-vs-supply read. Splitting it out was still the right call — that is
+  // how we learned the inventory generates nothing.
+  'west end',
 ]);
 
 // The small downtown-adjacent labels report as one combined row.
@@ -121,7 +126,6 @@ const YGL_LABEL_BUCKETS = {
   'theatre district': DOWNTOWN_BUCKET,
   'chinatown': DOWNTOWN_BUCKET,
   'financial district': DOWNTOWN_BUCKET,
-  'west end': 'West End', // its own row — 78 listings previously counted as Beacon Hill
 };
 
 function isOutOfArea(yglNeighborhood) {
