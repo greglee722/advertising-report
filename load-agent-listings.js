@@ -55,6 +55,15 @@ function parseBeds(v) {
   const m = s.match(/(\d+)/);
   return m ? parseInt(m[1], 10) : null;
 }
+// The listing URL is worth capturing even though Zillow blocks automated fetches: it carries the
+// zpid, a permanent exact key. Address text is fragile ("2 Joy St #10" vs "2 Joy St APT 10"); a
+// zpid is not. It also lets Greg click straight through on the monthly re-check instead of hunting
+// for each listing. We only ever parse the string — never fetch it.
+function parseZpid(v) {
+  const m = String(v || '').match(/(\d{6,})_zpid|\bzpid[=/](\d{6,})/i);
+  return m ? (m[1] || m[2]) : null;
+}
+
 function parsePrice(v) {
   const s = String(v || '').replace(/[$,\s]/g, '');
   if (!s) return null;
@@ -85,14 +94,16 @@ function parsePrice(v) {
       const beds = parseBeds(col(r, 'beds', 'fill'));
       const notes = col(r, 'notes');
       const agent = col(r, 'agent');
+      const zpid = parseZpid(col(r, 'url')) || parseZpid(col(r, 'link')) || parseZpid(col(r, 'zpid'));
       if (!address) { skipped.push({ why: 'no address', row: JSON.stringify(r).slice(0, 80) }); continue; }
       if (price == null && beds == null) { skipped.push({ why: 'nothing filled', row: address, notes }); continue; }
       // Last non-null wins per field, so a second sheet can complete a partial row.
-      const prev = records.get(address) || { address, price: null, beds: null, agent, notes: '' };
+      const prev = records.get(address) || { address, price: null, beds: null, zpid: null, agent, notes: '' };
       records.set(address, {
         address,
         price: price != null ? price : prev.price,
         beds: beds != null ? beds : prev.beds,
+        zpid: zpid || prev.zpid,
         agent: prev.agent || agent,
         notes: [prev.notes, notes].filter(Boolean).join(' | '),
       });
@@ -119,6 +130,7 @@ function parsePrice(v) {
       address      TEXT PRIMARY KEY,
       price        INTEGER,
       beds         INTEGER,
+      zpid         VARCHAR,
       source_agent VARCHAR,
       notes        TEXT,
       updated_at   TIMESTAMP DEFAULT NOW()
@@ -129,15 +141,16 @@ function parsePrice(v) {
   for (const r of list) {
     // COALESCE on the incoming value so a later partial fill can't blank an existing figure.
     await client.query(`
-      INSERT INTO agent_listings (address, price, beds, source_agent, notes, updated_at)
-      VALUES ($1,$2,$3,$4,$5,NOW())
+      INSERT INTO agent_listings (address, price, beds, zpid, source_agent, notes, updated_at)
+      VALUES ($1,$2,$3,$6,$4,$5,NOW())
       ON CONFLICT (address) DO UPDATE SET
         price        = COALESCE(EXCLUDED.price, agent_listings.price),
         beds         = COALESCE(EXCLUDED.beds,  agent_listings.beds),
+        zpid         = COALESCE(EXCLUDED.zpid,  agent_listings.zpid),
         source_agent = COALESCE(agent_listings.source_agent, EXCLUDED.source_agent),
         notes        = NULLIF(TRIM(BOTH ' |' FROM COALESCE(agent_listings.notes,'') || ' | ' || COALESCE(EXCLUDED.notes,'')), ''),
         updated_at   = NOW()`,
-      [r.address, r.price, r.beds, r.agent, r.notes || null]);
+      [r.address, r.price, r.beds, r.agent, r.notes || null, r.zpid]);
     written++;
   }
   await client.query('COMMIT');

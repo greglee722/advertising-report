@@ -57,7 +57,7 @@ const esc = v => {
 
 const HEADER = ['Agent', 'Rank', 'Address', 'Leads', '% of agent leads (running)',
   'Lead names', 'First lead', 'Last lead', 'Requested move-in',
-  'FUB beds (may be wrong)', 'PRICE — fill in', 'BEDS — fill in', 'Notes — fill in'];
+  'FUB beds (may be wrong)', 'PRICE — fill in', 'BEDS — fill in', 'LISTING URL — fill in', 'Notes — fill in'];
 
 const out = [HEADER.map(esc).join(',')];
 let totalRows = 0;
@@ -72,7 +72,7 @@ Object.keys(byAgent).sort().forEach(agent => {
     out.push([
       r.agent, i + 1, r.address, r.count, (running / agentTotal * 100).toFixed(0) + '%',
       [...r.names].join('; '), r.first, r.last, [...r.moveIns].sort().join('; '),
-      bedsLabel(r.beds), '', '', '',
+      bedsLabel(r.beds), '', '', '', '',
     ].map(esc).join(','));
   });
 });

@@ -4,7 +4,7 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.8.0';
+const VERSION = '0.8.1';
 const DATA_FILE = path.join(__dirname, 'public', 'data.json');
 
 // Boston metro ZIP → neighborhood (matches active-ads-combine)
@@ -234,10 +234,28 @@ async function fetchYGLListings(apiKey) {
   const seen = new Set();
   const all = [];
   let total = null;
+  let staleStreak = 0;
 
   for (let page = 1; page <= MAX_PAGES; page++) {
-    const raw = await fetchYGLPage(apiKey, page);
-    if (!raw) break;
+    // Retry a page before giving up. A single transient hiccup used to end the whole walk: on
+    // 2026-08-05 a run stopped at page 7 and returned 697 of 2530 listings — 27% of inventory —
+    // while YGL itself was healthy. Silently shipping that would have gutted the inventory table.
+    let raw = '', parsed = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      raw = await fetchYGLPage(apiKey, page);
+      if (raw) {
+        try { parsed = parseYGLXml(raw); break; }
+        catch (e) { console.warn(`  YGL parse error on page ${page} (attempt ${attempt}): ${e.message}`); }
+      }
+      if (attempt < 3) {
+        console.warn(`  YGL page ${page} failed (attempt ${attempt}) — retrying`);
+        await new Promise(r => setTimeout(r, 1500 * attempt));
+      }
+    }
+    if (parsed === null) {
+      console.warn(`  YGL page ${page} failed 3 times — stopping the walk here`);
+      break;
+    }
 
     if (total === null) {
       const m = raw.match(/<Total>(\d+)<\/Total>/);
@@ -245,23 +263,30 @@ async function fetchYGLListings(apiKey) {
       if (total) console.log(`  YGL reports ${total} on-market listings`);
     }
 
-    let parsed;
-    try {
-      parsed = parseYGLXml(raw);
-    } catch (e) {
-      console.warn(`  YGL parse error on page ${page}:`, e.message);
-      break;
-    }
     if (!parsed.length) break;
 
     let fresh = 0;
     for (const l of parsed) {
-      if (seen.has(l.id)) continue; // guard against a page param that silently no-ops
+      if (seen.has(l.id)) continue;
       seen.add(l.id);
       all.push(l);
       fresh++;
     }
-    if (!fresh) break;
+
+    // ⚠️ A single all-duplicate page does NOT mean the end of the feed. YGL sorts by updated_at
+    // desc and rows shift between requests, so an occasional page repeats one we've already read
+    // and then the next page continues normally. Breaking on the first zero-fresh page truncated a
+    // run at page 8 — 697 of 2530 listings — while pages 9 onward were full of new records.
+    // Only stop after several consecutive stale pages, which is what a genuinely no-op page
+    // parameter would look like.
+    if (fresh === 0) {
+      if (++staleStreak >= 3) {
+        console.log(`  ${staleStreak} consecutive pages with nothing new — treating page ${page} as the end`);
+        break;
+      }
+    } else {
+      staleStreak = 0;
+    }
 
     if (total !== null && all.length >= total) break;
     await new Promise(r => setTimeout(r, 400));
@@ -287,10 +312,18 @@ async function fetchYGLListings(apiKey) {
   if (total !== null && all.length < total) {
     // YGL only sorts by updated_at desc (sort_name rejects other fields with a 400), and listings
     // are updated while we walk the pages, so a small shortfall is expected drift, not a fault.
-    // Warn only when the gap is big enough to mean genuinely missed pages.
     const pct = all.length / total;
     const msg = `fetched ${all.length} of ${total} reported listings (${(pct * 100).toFixed(1)}%)`;
-    if (pct < 0.95) console.warn(`  WARNING: ${msg} — pagination may be truncated`);
+    if (pct < 0.80) {
+      // Too short to be drift — the walk broke. Return null so the caller keeps the previous
+      // inventory rather than overwriting a good snapshot with a fragment. A cron nobody watches
+      // must not be able to quietly replace 2,500 listings with 700.
+      console.error(`  ERROR: ${msg} — refusing to overwrite good inventory with a truncated pull`);
+      return null;
+    }
+    // Duplicate pages are normal (see the staleStreak note above), so a few percent short is the
+    // healthy steady state, not a fault. Warn below 90%, hard-fail below 80%.
+    if (pct < 0.90) console.warn(`  WARNING: ${msg} — pagination may be truncated`);
     else console.log(`  ${msg} — small gap is expected pagination drift`);
   }
   Object.entries(byNbhd).forEach(([n, c]) => console.log(`    ${n}: ${c}`));
@@ -806,8 +839,15 @@ async function generateDataJson(client, yglListings = []) {
   // the listing. See load-agent-listings.js.
   let agentListings = {};
   try {
-    const { rows: alRows } = await client.query('SELECT address, price, beds FROM agent_listings');
-    for (const r of alRows) agentListings[r.address] = { price: r.price, beds: r.beds };
+    const { rows: alRows } = await client.query('SELECT address, price, beds, zpid, updated_at FROM agent_listings');
+    for (const r of alRows) agentListings[r.address] = {
+      price: r.price, beds: r.beds, zpid: r.zpid,
+      // Surfaced so the report can state WHEN a price was captured. Zillow's public price history
+      // does not reliably reflect an agent editing their own ad (verified 2026-08-04: 1088 Boylston
+      // St #7 read $2,400 in the agent's account while Zillow still showed $2,500), so staleness
+      // cannot be detected — only dated and re-captured.
+      capturedAt: r.updated_at ? new Date(r.updated_at).toISOString().slice(0, 10) : null,
+    };
     console.log(`  Loaded ${alRows.length} manually-filled listings`);
   } catch {
     // table doesn't exist yet — nothing filled in
@@ -993,8 +1033,22 @@ async function main() {
 
   console.log('\nFetching YGL inventory...');
   const yglApiKey = process.env.YGL_API_KEY;
-  const yglListings = yglApiKey ? await fetchYGLListings(yglApiKey) : [];
+  let yglListings = yglApiKey ? await fetchYGLListings(yglApiKey) : [];
   if (!yglApiKey) console.log('  YGL_API_KEY not set — skipping');
+
+  // fetchYGLListings returns null when the walk broke badly enough that the result is a fragment.
+  // Carry forward the previous snapshot instead of publishing it — stale inventory clearly beats
+  // inventory that has silently lost three quarters of its listings.
+  if (yglListings === null) {
+    try {
+      const prev = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+      yglListings = prev.yglListings || [];
+      console.warn(`  Keeping the previous inventory snapshot (${yglListings.length} listings) — this run's pull was truncated`);
+    } catch {
+      yglListings = [];
+      console.warn('  No previous snapshot to fall back on — inventory will be empty this run');
+    }
+  }
 
   console.log('\nGenerating data.json...');
   await generateDataJson(client, yglListings);

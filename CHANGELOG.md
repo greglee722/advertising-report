@@ -1,5 +1,33 @@
 # Changelog
 
+## index.html v1.7 · sync.js v0.8.1 — 2026-08-05
+
+### Fixed
+- **⚠️ Pagination could silently truncate the inventory to a fragment.** A run returned **697 of
+  2,530 listings (27%)** while YGL itself was perfectly healthy. Cause: `if (!fresh) break` — a
+  guard meant to catch a no-op page parameter — treated a single all-duplicate page as the end of
+  the feed. YGL sorts by `updated_at desc` and rows shift between requests, so page 8 repeated page
+  7 while pages 9+ were full of new records. Earlier successful pulls were luck. Now tolerates up to
+  3 consecutive stale pages, and pages are retried up to 3× before the walk gives up. Full pull
+  restored: 2,397 of 2,530 (94.7%).
+- **A truncated pull can no longer overwrite a good snapshot.** Below 80% of the reported total,
+  `fetchYGLListings` returns null and the sync carries forward the previous inventory instead of
+  publishing a fragment. A cron nobody watches must not be able to quietly replace 2,500 listings
+  with 700. Warning threshold moved 95% → 90%, since a few percent short is now understood as the
+  healthy steady state rather than a fault.
+
+### Added
+- **"Prices as recorded {date}" on the Lead Volume header**, derived from `agent_listings.updated_at`
+  rather than hardcoded, so it can never claim a month the data didn't come from.
+  Zillow's public price history does **not** reliably reflect an agent editing their own ad —
+  verified on 1088 Boylston St #7, which read $2,400 in the agent's account while Zillow still
+  showed $2,500 — so a stale price cannot be detected automatically. It can only be dated honestly
+  and re-captured on a schedule.
+- **`zpid` captured from a listing URL** (parsed from the string, never fetched — Zillow blocks
+  automated requests). A zpid is a permanent exact key where address text is fragile
+  (`2 Joy St #10` vs `2 Joy St APT 10`), and it lets the monthly re-check click straight through.
+  New `LISTING URL — fill in` column in the export.
+
 ## index.html v1.6 — 2026-08-04
 
 Verified bed counts and agent ad prices now drive the lead half of the report.

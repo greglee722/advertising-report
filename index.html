@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lead &amp; Listing Report v1.6</title>
+<title>Lead &amp; Listing Report v1.7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -295,7 +295,7 @@
 <div class="header">
   <div class="header-left">
     <h1>Lead &amp; Listing Report</h1>
-    <span class="version">v1.6</span>
+    <span class="version">v1.7</span>
   </div>
   <div style="display:flex;align-items:center;gap:16px;">
     <span id="alertSlot"></span>
@@ -485,6 +485,19 @@ function isVerified(lead) {
 function leadPrice(lead) {
   const v = agentListings[lead.address];
   return v && usablePrice(v.price) ? v.price : null;
+}
+
+// When the prices in this report were read off the agents' own accounts. Derived from the data, so
+// it can never claim a month the data doesn't come from. Zillow's public price history does NOT
+// reliably reflect an agent editing their own ad — verified 2026-08-04, 1088 Boylston St #7 read
+// $2,400 in the agent's account while Zillow still showed $2,500 — so a stale price cannot be
+// detected automatically. It can only be dated honestly and re-captured on a schedule.
+function priceCaptureLabel() {
+  const dates = Object.values(agentListings).map(v => v && v.capturedAt).filter(Boolean).sort();
+  if (!dates.length) return '';
+  const first = dates[0], last = dates[dates.length - 1];
+  const fmt = s => new Date(s + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return first === last ? `prices as recorded ${fmt(last)}` : `prices as recorded ${fmt(first)} – ${fmt(last)}`;
 }
 
 function bedsLabel(beds) {
@@ -1238,6 +1251,7 @@ function render() {
 
   const locLeadCount = leads.filter(l => l.neighborhood).length;
   const verifiedCount = leads.filter(l => l.neighborhood && isVerified(l)).length;
+  const priceLabel = priceCaptureLabel();
   root.innerHTML = `
     ${statsHtml}
     ${recsHtml}
@@ -1245,7 +1259,7 @@ function render() {
       <div class="heat-section">
         <div class="section-header">
           <span class="section-title">Lead Volume by Neighborhood &amp; Beds${bedsCaveatDot(leads)}</span>
-          <span class="section-sub">${locLeadCount} of ${leads.length} leads have location · ${verifiedCount} verified beds</span>
+          <span class="section-sub">${locLeadCount} of ${leads.length} leads have location · ${verifiedCount} verified beds${priceLabel ? ' · ' + priceLabel : ''}</span>
         </div>
         ${heatHtml}
       </div>
